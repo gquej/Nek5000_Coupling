@@ -1,0 +1,344 @@
+c-----------------------------------------------------------------------
+c  nek5000 user-file template
+c
+c  user specified routines:
+c     - uservp  : variable properties
+c     - userf   : local acceleration term for fluid
+c     - userq   : local source term for scalars
+c     - userbc  : boundary conditions
+c     - useric  : initial conditions
+c     - userchk : general purpose routine for checking errors etc.
+c     - userqtl : thermal divergence for lowMach number flows 
+c     - usrdat  : modify element vertices 
+c     - usrdat2 : modify mesh coordinates
+c     - usrdat3 : general purpose routine for initialization
+c     
+c-----------------------------------------------------------------------
+      subroutine uservp(ix,iy,iz,eg) ! set variable properties
+
+c      implicit none
+
+      integer ix,iy,iz,eg
+     
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+c     e = gllel(eg)
+
+      udiff  = 0.0
+      utrans = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf(ix,iy,iz,eg) ! set acceleration term
+c
+c     Note: this is an acceleration term, NOT a force!
+c     Thus, ffx will subsequently be multiplied by rho(x,t).
+c
+c      implicit none
+
+      integer ix,iy,iz,eg
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+c     e = gllel(eg)
+
+      ffx = 0.0
+      ffy = 0.0
+      ffz = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq(ix,iy,iz,eg) ! set source term
+
+c      implicit none
+
+      integer ix,iy,iz,eg
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+c     e = gllel(eg)
+
+      qvol   = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbc(ix,iy,iz,iside,eg) ! set up boundary conditions
+c
+c     NOTE ::: This subroutine MAY NOT be called by every process
+c
+c      implicit none
+
+      
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer ix,iy,iz,iside,eg
+      real u_, v_, p_
+      integer WTSC !0 for Gaussian vortex, 1 for TGV
+
+      WTSC = uparam(8)
+
+      if(WTSC.eq.0) then                  !Gaussian vortex
+            call GVLFD(x,y,u_,v_) ! compute the exact solution
+      else                          !Taylor-Green vortex
+            call TVLFD(x,y,u_,v_, p_) ! compute the exact solution
+      endif
+      ux = u_
+      uy = v_
+      uz = 0.0
+      
+      
+      
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric(ix,iy,iz,eg) ! set up initial conditions
+
+c      implicit none
+
+      
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer ix,iy,iz,eg
+      real u_, v_, p_
+      integer WTSC !0 for Gaussian vortex, 1 for TGV
+
+      WTSC = uparam(8)
+
+      if(WTSC.eq.0) then                  !Gaussian vortex
+            call GVLFD(x,y,u_,v_) ! compute the exact solution
+      else                          !Taylor-Green vortex
+            call TVLFD(x,y,u_,v_, p_)
+      endif
+      ux = u_
+      uy = v_
+      uz = 0.0
+
+      
+
+      return
+      end
+
+
+c-----------------------------------------------------------------------
+      subroutine userchk()
+
+c      implicit none
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer i,j,ie
+      real u_, v_, p_
+      real dump1, dump2,Linfu, Linfv, LinfP,L2u, L2v, L2P
+      real L2Mg, LinfMg
+      real GVRTX, SVRTX, UTGV, PTGV
+      real ADMU2, ADMUI, ADMP2,ADMPI ! adim coefficients for the errors
+      integer WTSC !0 for Gaussian vortex, 1 for TGV
+
+      WTSC = uparam(8)
+
+      if(WTSC.eq.0) then                  !Gaussian vortex
+            GVRTX = uparam(1) !vortex circulation
+            SVRTX = uparam(2) !vortex sigma
+            ADMU2 = 1.0/(GVRTX)
+            ADMUI = SVRTX/GVRTX
+            ADMP2 = SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
+            ADMPI = SVRT*SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
+      else                          !Taylor-Green vortex
+            UTGV = uparam(1) !Characteristic velocity of the TGV
+            PTGV = uparam(2) !Wavelength of the TGV
+            ADMU2 = 1.0/(UTGV*PTGV)
+            ADMUI = 1.0/UTGV
+            ADMP2 = 1.0/(cpfld(1,2)*UTGV*UTGV*PTGV)
+            ADMPI = 1.0/(cpfld(1,2)*UTGV*UTGV)
+      endif
+
+
+c     Compute the exact solution at each grid point, then the relative
+c     error in u, v and Umag
+      do ie=1,nelv
+      do j = 1,ly1
+      do i  = 1,lx1
+            if(WTSC.eq.0) then
+                  call GVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_) ! compute the exact solution
+            else
+                  call TVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_, p_) ! compute the exact solution
+            endif
+            t(i,j,1,ie,2) = (vx(i,j,1,ie) - u_)
+            t(i,j,1,ie,3) = (vy(i,j,1,ie) - v_)
+            t(i,j,1,ie,4) = (pr(i,j,1,ie) - p_)
+            t(i,j,1,ie,5) = 0.0
+      enddo
+      enddo
+      enddo
+
+c     Integrate the error over the domain on u, v and Umag (in L2 and Linf sense)
+      call normvc(dump1,dump2,L2u,Linfu,t(:,:,:,:,2),
+     &             t(:,:,:,:,5),t(:,:,:,:,5))
+      call normvc(dump1,dump2,L2v,Linfv,t(:,:,:,:,3),
+     &             t(:,:,:,:,5),t(:,:,:,:,5))
+      call normvc(dump1,dump2,L2P,LinfP,t(:,:,:,:,4),
+     &             t(:,:,:,:,5),t(:,:,:,:,5))
+    
+c      print *, time, Linfu
+
+c     Normalize the errors
+      L2u = L2u*L2u*VOLVM1
+      L2v = L2v*L2v*VOLVM1
+      L2P = L2P*L2P*VOLVM1
+      L2Mg = ADMU2*sqrt(L2u + L2v) !L2 norm of the velocity magnitude
+      L2P  = ADMP2*sqrt(L2P) !L2 norm of the pressure
+      LinfMg = ADMUI*(Linfu + Linfv) !Linf norm of the velocity magnitude
+      LinfP  = ADMPI*LinfP !Linf norm of the pressure
+
+c     Write the errors to a file
+      if (istep.eq.0 .and. nid.eq.0) then
+      open(789,file='errors.txt',status='unknown',action='write')
+      write (789, '(5(ES25.16))') time, L2Mg, L2P,
+     & LinfMg, LinfP
+      close(789)
+      end if
+      if (nid.eq.0 .and. istep.gt.0) then
+      open(789,file='errors.txt',action='write',position='append')
+      write (789, '(5(ES25.16))') time, L2Mg, L2P,
+     & LinfMg, LinfP
+      close(789)
+      end if
+
+
+      return
+      end
+c-----------------------------------------------------------------------
+c     subroutine to compute the velocity field (u_, v_) induced by a 
+c     diffusing gaussian vorticity field at a position x_, y_
+      subroutine GVLFD (x_, y_, u_, v_)
+c      implicit none 
+      include 'SIZE'
+      include 'TOTAL'
+ 
+       real GVRTX, SVRTX, nu_, u_v, v_v, x_, y_, u_, v_
+       real x0, y0, x_v, y_v, x_rel, y_rel, r_rel,temp_1
+ 
+       GVRTX    = uparam(1)     !vortex circulation
+       SVRTX  = uparam(2)     !vortex sigma
+       x0  = uparam(3)     !vortex init x position
+       y0  = uparam(4)      !vortex init y position
+       u_v = uparam(5)      !vortex x velocity
+       v_v = uparam(6)   !vortex y velocity
+       nu_ = cpfld(1,1)/cpfld(1,2)  !fluid kinematic viscosity
+
+      PI  = 4.*ATAN(1.0)      
+      x_v = x0 +time*u_v
+      y_v = y0 +time*v_v
+
+      x_rel = x_ - x_v
+      y_rel = y_ - y_v
+      r_rel = sqrt(x_rel*x_rel + y_rel*y_rel) + 1.0e-14
+
+      temp_1 = 1.0 - exp(-r_rel*r_rel/(SVRTX*SVRTX + 4.0*nu_*time))
+      u_ = -(GVRTX*y_rel*temp_1)/(2.0*PI*r_rel*r_rel) + u_v
+      v_ =  (GVRTX*x_rel*temp_1)/(2.0*PI*r_rel*r_rel) + v_v
+
+      return
+      end
+c-----------------------------------------------------------------------
+c    subroutine to compute the velocity field and pressure (u_, v_, p_) induced by a
+c    Taylor-Green vortex field at a position x_, y_
+c    
+      subroutine TVLFD(x_, y_, u_, v_, p_)
+      include 'SIZE'
+      include 'TOTAL'
+      
+      real UTGV, PTGV, nu_, u_v, v_v, x_, y_, u_, v_, p_
+      real x0, y0, x_v, y_v, x_rel, y_rel
+      UTGV = uparam(1)     !Characteristic velocity of the TGV
+      PTGV = uparam(2)     !Wavelength of the TGV
+      x0  = uparam(3)          !field init x position
+      y0  = uparam(4)          !field init y position
+      u_v = uparam(5)          !Uinf x
+      v_v = uparam(6)          !Uinf y
+      nu_ = cpfld(1,1)/cpfld(1,2)  !fluid kinematic viscosity
+
+      x_v = x0 +time*u_v
+      y_v = y0 +time*v_v
+      x_rel = x_ - x_v
+      y_rel = y_ - y_v
+
+      u_ = UTGV*sin(2.0*PI*x_rel/PTGV)*cos(2.0*PI*y_rel/PTGV)
+     & *exp(-2.0*nu_*time) + u_v
+      v_ = -UTGV*cos(2.0*PI*x_rel/PTGV)*sin(2.0*PI*y_rel/PTGV)
+     & *exp(-2.0*nu_*time) + v_v
+      p_ = UTGV*(cpfld(1,2)*0.25)*(cos(4.0*PI*x_rel/PTGV)
+     &  + cos(4.0*PI*y_rel/PTGV))*exp(-4.0*nu_*time)
+
+      return
+      end
+      
+c-----------------------------------------------------------------------
+      subroutine userqtl ! Set thermal divergence
+
+      call userqtl_scig 
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat()   ! This routine to modify element vertices
+
+c      implicit none
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer ie,iside
+      integer BCGNBX ! if the mesh was gen by genbox
+      BCGNBX = uparam(7)
+      if (BCGNBX.eq.0) then      
+            do ie=1,nelv !loop over all elements on the local MPI rank
+                  do iside=1,2*ldim !loop over all sides on the element
+                        cbc(iside,ie,1)="E  " !first set all faces to internal boundaries
+                        if(boundaryID(iside,ie).eq.1) then !boundary 1 is the outer boundary
+                              cbc(iside,ie,1) = "v  " !velocity in global coord
+                        endif 
+                  enddo
+            enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2()  ! This routine to modify mesh coordinates
+
+c      implicit none
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3()
+
+c      implicit none
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
