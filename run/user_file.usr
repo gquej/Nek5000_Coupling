@@ -92,9 +92,9 @@ c      implicit none
       WTSC = uparam(8)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x,y,u_,v_) ! compute the exact solution
+            call GVLFD(x, y, u_, v_, p_) ! compute the exact solution
       else                          !Taylor-Green vortex
-            call TVLFD(x,y,u_,v_, p_) ! compute the exact solution
+            call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
       endif
       ux = u_
       uy = v_
@@ -122,7 +122,7 @@ c      implicit none
       WTSC = uparam(8)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x,y,u_,v_) ! compute the exact solution
+            call GVLFD(x,y,u_,v_, p_) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x,y,u_,v_, p_)
       endif
@@ -177,7 +177,7 @@ c     error in u, v and Umag
       do j = 1,ly1
       do i  = 1,lx1
             if(WTSC.eq.0) then
-                  call GVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_) ! compute the exact solution
+                  call GVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_, p_) ! compute the exact solution
             else
                   call TVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_, p_) ! compute the exact solution
             endif
@@ -228,12 +228,12 @@ c     Write the errors to a file
 c-----------------------------------------------------------------------
 c     subroutine to compute the velocity field (u_, v_) induced by a 
 c     diffusing gaussian vorticity field at a position x_, y_
-      subroutine GVLFD (x_, y_, u_, v_)
+      subroutine GVLFD (x_, y_, u_, v_, p_)
 c      implicit none 
       include 'SIZE'
       include 'TOTAL'
  
-       real GVRTX, SVRTX, nu_, u_v, v_v, x_, y_, u_, v_
+       real GVRTX, SVRTX, nu_, u_v, v_v, x_, y_, u_, v_, p_
        real x0, y0, x_v, y_v, x_rel, y_rel, r_rel,temp_1
  
        GVRTX    = uparam(1)     !vortex circulation
@@ -255,6 +255,7 @@ c      implicit none
       temp_1 = 1.0 - exp(-r_rel*r_rel/(SVRTX*SVRTX + 4.0*nu_*time))
       u_ = -(GVRTX*y_rel*temp_1)/(2.0*PI*r_rel*r_rel) + u_v
       v_ =  (GVRTX*x_rel*temp_1)/(2.0*PI*r_rel*r_rel) + v_v
+      p_ = 0.0
 
       return
       end
