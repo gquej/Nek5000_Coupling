@@ -129,7 +129,6 @@ c      implicit none
       ux = u_
       uy = v_
       uz = 0.0
-
       
 
       return
@@ -151,6 +150,7 @@ c      implicit none
       real GVRTX, SVRTX, UTGV, PTGV
       real ADMU2, ADMUI, ADMP2,ADMPI ! adim coefficients for the errors
       integer WTSC !0 for Gaussian vortex, 1 for TGV
+      real DBGP !global pressure offset 
 
       WTSC = uparam(8)
 
@@ -173,6 +173,8 @@ c      implicit none
 
 c     Compute the exact solution at each grid point, then the relative
 c     error in u, v and Umag
+      call GVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
+      DBGP = pr(1,1,1,1) -p_ !compute global pressure offset
       do ie=1,nelv
       do j = 1,ly1
       do i  = 1,lx1
@@ -183,7 +185,7 @@ c     error in u, v and Umag
             endif
             t(i,j,1,ie,2) = (vx(i,j,1,ie) - u_)
             t(i,j,1,ie,3) = (vy(i,j,1,ie) - v_)
-            t(i,j,1,ie,4) = (pr(i,j,1,ie) - p_)
+            t(i,j,1,ie,4) = (pr(i,j,1,ie) - p_-DBGP)
             t(i,j,1,ie,5) = 0.0
       enddo
       enddo
@@ -211,14 +213,14 @@ c     Normalize the errors
 c     Write the errors to a file
       if (istep.eq.0 .and. nid.eq.0) then
       open(789,file='errors.txt',status='unknown',action='write')
-      write (789, '(5(ES25.16))') time, L2Mg, L2P,
-     & LinfMg, LinfP
+      write (789, '(6(ES25.16))') time, L2Mg, L2P,
+     & LinfMg, LinfP, DBGP
       close(789)
       end if
       if (nid.eq.0 .and. istep.gt.0) then
       open(789,file='errors.txt',action='write',position='append')
-      write (789, '(5(ES25.16))') time, L2Mg, L2P,
-     & LinfMg, LinfP
+      write (789, '(6(ES25.16))') time, L2Mg, L2P,
+     & LinfMg, LinfP, DBGP
       close(789)
       end if
 
@@ -235,6 +237,7 @@ c      implicit none
  
        real GVRTX, SVRTX, nu_, u_v, v_v, x_, y_, u_, v_, p_
        real x0, y0, x_v, y_v, x_rel, y_rel, r_rel,temp_1
+       real temp_a,temp_b,temp_2,temp_3,temp_4,temp_5,temp_6
  
        GVRTX    = uparam(1)     !vortex circulation
        SVRTX  = uparam(2)     !vortex sigma
@@ -255,7 +258,17 @@ c      implicit none
       temp_1 = 1.0 - exp(-r_rel*r_rel/(SVRTX*SVRTX + 4.0*nu_*time))
       u_ = -(GVRTX*y_rel*temp_1)/(2.0*PI*r_rel*r_rel) + u_v
       v_ =  (GVRTX*x_rel*temp_1)/(2.0*PI*r_rel*r_rel) + v_v
-      p_ = 0.0
+
+c     Compute the pressure field: not so simple!
+      temp_a = cpfld(1,2)*GVRTX*GVRTX/(4.0*PI*PI)
+      temp_b = 4.0*nu_*time + SVRTX*SVRTX
+      temp_2 = -2.0*r_rel*r_rel*expint(2.0*r_rel*r_rel/temp_b) ! minus sign inside ei for algo
+      temp_3 = -2.0*r_rel*r_rel*expint(r_rel*r_rel/temp_b) ! minus sign inside ei for algo
+      temp_4 = exp(-2.0*r_rel*r_rel/temp_b)
+      temp_5 = exp(r_rel*r_rel/temp_b) -1.0
+      temp_6 = temp_b*temp_4*temp_5*temp_5
+      p_ = - temp_a*(temp_2 - temp_3 + temp_6)/(2.0*temp_b*r_rel*r_rel)
+
 
       return
       end
@@ -343,3 +356,51 @@ c      implicit none
 
       return
       end
+c-----------------------------------------------------------------------
+c    subroutine to compute the exponential integral function E1(x)
+c We have that Ei(-x) = -E1(x) for x>0 so instead of compute Ei(-x) we compute E1(x).
+      function expint(xx)
+c     Warning must have xx >0 to work       
+      integer maxit
+      real expint,xx,eps,fpmin,euler
+      parameter(maxit  = 100,eps = 1.0e-16,EULER=.5772156649
+     & 01532860,fpmin=1.0e-30)
+      integer i,ii
+      real a,b,c,d,del,fact,h,psi
+      if (xx.gt.1) then
+            b = xx+1
+            c = 1.0/fpmin
+            d = 1.0/b
+            h = d
+            do i=1,maxit
+                  a = -i*(i)
+                  b = b + 2.0
+                  d = 1.0/(a*d+b)
+                  c = b+a/c
+                  del = c*d
+                  h = h*del
+                  if (abs(del-1.0).lt.eps) then
+                        expint = h*exp(-xx)
+                        return
+                  end if
+            end do
+            if (i.eq.maxit) print *, 'expint: too many iterations'
+            expint = h*exp(-xx)/xx
+      else
+            expint = -log(xx)-EULER
+            fact = 1.0
+            do i=1,maxit
+                  fact = -fact*(xx/i)
+                  if(i.ne.0) then
+                        del = -fact/(i)
+                  else 
+                        psi = -euler
+                        del = fact*(-log(xx)+psi)
+                  end if
+                  expint = expint + del
+                  if (abs(del).lt.abs(expint)*eps) return
+            end do
+      end if
+      return
+      end
+
