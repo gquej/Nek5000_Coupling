@@ -300,11 +300,11 @@ c
       y_rel = y_ - y_v
 
       u_ = UTGV*sin(2.0*PI*x_rel/PTGV)*cos(2.0*PI*y_rel/PTGV)
-     & *exp(-2.0*nu_*time) + u_v
+     & *exp(-8.0*PI*PI*nu_*time/(PTGV*PTGmaV)) + u_v
       v_ = -UTGV*cos(2.0*PI*x_rel/PTGV)*sin(2.0*PI*y_rel/PTGV)
-     & *exp(-2.0*nu_*time) + v_v
+     & *exp(-8.0*PI*PI*nu_*time/(PTGV*PTGV)) + v_v
       p_ = UTGV*(cpfld(1,2)*0.25)*(cos(4.0*PI*x_rel/PTGV)
-     &  + cos(4.0*PI*y_rel/PTGV))*exp(-4.0*nu_*time)
+     &  + cos(4.0*PI*y_rel/PTGV))*exp(-16.0*PI*PI*nu_*time/(PTGV*PTGV))
 
       return
       end
