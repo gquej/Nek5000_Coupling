@@ -173,7 +173,10 @@ c      implicit none
 
 c     Compute the exact solution at each grid point, then the relative
 c     error in u, v and Umag
-      call GVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
+      if(WTSC.eq.0) then
+            call GVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
+      else
+            call TVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
       DBGP = pr(1,1,1,1) -p_ !compute global pressure offset
       do ie=1,nelv
       do j = 1,ly1
