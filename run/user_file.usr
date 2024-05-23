@@ -151,6 +151,10 @@ c      implicit none
       real ADMU2, ADMUI, ADMP2,ADMPI ! adim coefficients for the errors
       integer WTSC !0 for Gaussian vortex, 1 for TGV
       real DBGP !global pressure offset 
+      real SDBF(1)
+      real RVBF(1)
+
+ 
 
       WTSC = uparam(8)
 
@@ -171,6 +175,7 @@ c      implicit none
       endif
 
 
+
 c     Compute the exact solution at each grid point, then the relative
 c     error in u, v and Umag
       if(WTSC.eq.0) then
@@ -179,6 +184,10 @@ c     error in u, v and Umag
             call TVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
       endif
       DBGP = pr(1,1,1,1) -p_ !compute global pressure offset
+      SDBF(1) = DBGP
+      call bcast(SDBF,8) !broadcast the global pressure offset on rank 0 (8 bytes for real)
+      DBGP = SDBF(1)
+
       do ie=1,nelv
       do j = 1,ly1
       do i  = 1,lx1
@@ -303,7 +312,7 @@ c
      & *exp(-8.0*PI*PI*nu_*time/(PTGV*PTGV)) + u_v
       v_ = -UTGV*cos(2.0*PI*x_rel/PTGV)*sin(2.0*PI*y_rel/PTGV)
      & *exp(-8.0*PI*PI*nu_*time/(PTGV*PTGV)) + v_v
-      p_ = UTGV*(cpfld(1,2)*0.25)*(cos(4.0*PI*x_rel/PTGV)
+      p_ = UTGV*UTGV*(cpfld(1,2)*0.25)*(cos(4.0*PI*x_rel/PTGV)
      &  + cos(4.0*PI*y_rel/PTGV))*exp(-16.0*PI*PI*nu_*time/(PTGV*PTGV))
 
       return
