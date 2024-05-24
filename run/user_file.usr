@@ -88,17 +88,34 @@ c      implicit none
       integer ix,iy,iz,iside,eg
       real u_, v_, p_
       integer WTSC !0 for Gaussian vortex, 1 for TGV
+      integer BCLCGB ! if BC's expresse in local or global coord
+      real uunx, uuny, uunz, t1xx, t1yy, t1zz, t2xx, t2yy, t2zz
+
 
       WTSC = uparam(8)
+      BCLCGB = uparam(9)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
             call GVLFD(x, y, u_, v_, p_) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
       endif
-      ux = u_
-      uy = v_
-      uz = 0.0
+      if(BCLCGB.eq.0) then
+            ux = u_
+            uy = v_
+            uz = 0.0
+      else 
+
+      call FDNRML(ix,iy,iz,iside,eg,uunx,uuny,uunz,t1xx,t1yy
+     & ,t1zz,t2xx,t2yy,t2zz)
+       un = u_*uunx + v_*uuny + 0.0*uunz
+       u1 = u_*t1xx + v_*t1yy + 0.0*t1zz
+       u2 = 0.0
+
+
+      endif
+
+      
       
       
       
@@ -153,6 +170,7 @@ c      implicit none
       real DBGP !global pressure offset 
       real SDBF(1)
       real RVBF(1)
+      real uunx, uuny, uunz
 
  
 
@@ -204,6 +222,7 @@ c     error in u, v and Umag
       enddo
       enddo
 
+
 c     Integrate the error over the domain on u, v and Umag (in L2 and Linf sense)
       call normvc(dump1,dump2,L2u,Linfu,t(:,:,:,:,2),
      &             t(:,:,:,:,5),t(:,:,:,:,5))
@@ -238,6 +257,51 @@ c     Write the errors to a file
       end if
 
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine FDNRML(ix,iy,iz,iside,eg,uunx,uuny,uunz,
+     &       t1xx,t1yy,t1zz,t2xx,t2yy,t2zz)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer ix,iy,iz,eg,e,f,iside
+      real uunx,uuny,uunz
+      real t1xx, t1yy, t1zz
+      real t2xx, t2yy, t2zz
+      f = eface1(iside)
+      e = gllel(eg)
+      if (f.eq.1.or.f.eq.2) then
+            uunx = unx(iy,iz,iside,e)
+            uuny = uny(iy,iz,iside,e)
+            uunz = unz(iy,iz,iside,e)
+            t1xx = t1x(iy,iz,iside,e)
+            t1yy = t1y(iy,iz,iside,e)
+            t1zz = t1z(iy,iz,iside,e)
+            t2xx = t2x(iy,iz,iside,e)
+            t2yy = t2y(iy,iz,iside,e)
+            t2zz = t2z(iy,iz,iside,e)
+      elseif (f.eq.3.or.f.eq.4) then
+            uunx = unx(ix,iz,iside,e)
+            uuny = uny(ix,iz,iside,e)
+            uunz = unz(ix,iz,iside,e)
+            t1xx = t1x(ix,iz,iside,e)
+            t1yy = t1y(ix,iz,iside,e)
+            t1zz = t1z(ix,iz,iside,e)
+            t2xx = t2x(ix,iz,iside,e)
+            t2yy = t2y(ix,iz,iside,e)
+            t2zz = t2z(ix,iz,iside,e)
+      elseif (f.eq.5.or.f.eq.6) then
+            uunx = unx(ix,iy,iside,e)
+            uuny = uny(ix,iy,iside,e)
+            uunz = unz(ix,iy,iside,e)
+            t1xx = t1x(ix,iy,iside,e)
+            t1yy = t1y(ix,iy,iside,e)
+            t1zz = t1z(ix,iy,iside,e)
+            t2xx = t2x(ix,iy,iside,e)
+            t2yy = t2y(ix,iy,iside,e)
+      endif
       return
       end
 c-----------------------------------------------------------------------
@@ -335,13 +399,20 @@ c      implicit none
 
       integer ie,iside
       integer BCGNBX ! if the mesh was gen by genbox
+      integer BCLCGB ! if BC's expresse in local or global coord
       BCGNBX = uparam(7)
+      BCLCGB = uparam(9)
+      
       if (BCGNBX.eq.0) then      
             do ie=1,nelv !loop over all elements on the local MPI rank
                   do iside=1,2*ldim !loop over all sides on the element
                         cbc(iside,ie,1)="E  " !first set all faces to internal boundaries
                         if(boundaryID(iside,ie).eq.1) then !boundary 1 is the outer boundary
-                              cbc(iside,ie,1) = "v  " !velocity in global coord
+                              if (BCLCGB.eq.0) then
+                                    cbc(iside,ie,1) = "v  " !global coord
+                              else
+                                    cbc(iside,ie,1) = "vl " !local coord
+                              endif
                         endif 
                   enddo
             enddo
