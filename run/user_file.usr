@@ -86,7 +86,7 @@ c      implicit none
       include 'TOTAL'
       include 'NEKUSE'
       integer ix,iy,iz,iside,eg
-      real u_, v_, p_
+      real u_, v_, p_, w_, du_
       integer WTSC !0 for Gaussian vortex, 1 for TGV
       integer BCLCGB ! if BC's expresse in local or global coord
       real uunx, uuny, uunz, t1xx, t1yy, t1zz, t2xx, t2yy, t2zz
@@ -96,7 +96,7 @@ c      implicit none
       BCLCGB = uparam(9)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x, y, u_, v_, p_) ! compute the exact solution
+            call GVLFD(x, y, u_, v_, p_, w_, du_) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
       endif
@@ -104,21 +104,20 @@ c      implicit none
             ux = u_
             uy = v_
             uz = 0.0
-      else 
+      else if (BCLCGB.eq.1) then
 
       call FDNRML(ix,iy,iz,iside,eg,uunx,uuny,uunz,t1xx,t1yy
      & ,t1zz,t2xx,t2yy,t2zz)
-       un = u_*uunx + v_*uuny + 0.0*uunz
+       un = u_*uunx + v_*uuny + 0.0*uunz 
        u1 = u_*t1xx + v_*t1yy + 0.0*t1zz
        u2 = 0.0
+       
 
-
+      else if (BCLCGB.eq.2) then
+      tr1 = 0.0*2.0*cpfld(1,1)*(du_ - 0.5*w_)
+      tr2 = 0.0      
+      
       endif
-
-      
-      
-      
-      
 
       return
       end
@@ -133,13 +132,13 @@ c      implicit none
       include 'TOTAL'
       include 'NEKUSE'
       integer ix,iy,iz,eg
-      real u_, v_, p_
+      real u_, v_, p_, w_, du_
       integer WTSC !0 for Gaussian vortex, 1 for TGV
 
       WTSC = uparam(8)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x,y,u_,v_, p_) ! compute the exact solution
+            call GVLFD(x,y,u_,v_, p_, w_, du_) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x,y,u_,v_, p_)
       endif
@@ -161,7 +160,7 @@ c      implicit none
       include 'TOTAL'
 
       integer i,j,ie
-      real u_, v_, p_
+      real u_, v_, p_, w_, du_
       real dump1, dump2,Linfu, Linfv, LinfP,L2u, L2v, L2P
       real L2Mg, LinfMg
       real GVRTX, SVRTX, UTGV, PTGV
@@ -172,8 +171,6 @@ c      implicit none
       real RVBF(1)
       real uunx, uuny, uunz
 
- 
-
       WTSC = uparam(8)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
@@ -182,7 +179,7 @@ c      implicit none
             ADMU2 = 1.0/(GVRTX)
             ADMUI = SVRTX/GVRTX
             ADMP2 = SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
-            ADMPI = SVRT*SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
+            ADMPI = SVRTX*SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
       else                          !Taylor-Green vortex
             UTGV = uparam(1) !Characteristic velocity of the TGV
             PTGV = uparam(2) !Wavelength of the TGV
@@ -197,7 +194,7 @@ c      implicit none
 c     Compute the exact solution at each grid point, then the relative
 c     error in u, v and Umag
       if(WTSC.eq.0) then
-            call GVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
+            call GVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_, w_, du_)
       else
             call TVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
       endif
@@ -210,13 +207,15 @@ c     error in u, v and Umag
       do j = 1,ly1
       do i  = 1,lx1
             if(WTSC.eq.0) then
-                  call GVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_, p_) ! compute the exact solution
+                  call GVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),
+     &             u_,v_, p_, w_, du_) ! compute the exact solution
             else
                   call TVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_, p_) ! compute the exact solution
             endif
             t(i,j,1,ie,2) = (vx(i,j,1,ie) - u_)
             t(i,j,1,ie,3) = (vy(i,j,1,ie) - v_)
             t(i,j,1,ie,4) = (pr(i,j,1,ie) - p_-DBGP)
+
             t(i,j,1,ie,5) = 0.0
       enddo
       enddo
@@ -241,6 +240,7 @@ c     Normalize the errors
       L2P  = ADMP2*sqrt(L2P) !L2 norm of the pressure
       LinfMg = ADMUI*(Linfu + Linfv) !Linf norm of the velocity magnitude
       LinfP  = ADMPI*LinfP !Linf norm of the pressure
+
 
 c     Write the errors to a file
       if (istep.eq.0 .and. nid.eq.0) then
@@ -305,14 +305,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-c     subroutine to compute the velocity field (u_, v_) induced by a 
-c     diffusing gaussian vorticity field at a position x_, y_
-      subroutine GVLFD (x_, y_, u_, v_, p_)
+c     subroutine to compute the velocity field (u_, v_), pressure, vorticity and dutheta/dr induced by a 
+c     diffusing gaussian vorticity field at a position x_, y_,
+      subroutine GVLFD (x_, y_, u_, v_, p_, w_, du_ )
 c      implicit none 
       include 'SIZE'
       include 'TOTAL'
  
-       real GVRTX, SVRTX, nu_, u_v, v_v, x_, y_, u_, v_, p_
+       real GVRTX, SVRTX, nu_, u_v, v_v, x_, y_, u_, v_, p_, w_, du_
        real x0, y0, x_v, y_v, x_rel, y_rel, r_rel,temp_1
        real temp_a,temp_b,temp_2,temp_3,temp_4,temp_5,temp_6
  
@@ -345,10 +345,20 @@ c     Compute the pressure field: not so simple!
       temp_5 = exp(r_rel*r_rel/temp_b) -1.0
       temp_6 = temp_b*temp_4*temp_5*temp_5
       p_ = - temp_a*(temp_2 - temp_3 + temp_6)/(2.0*temp_b*r_rel*r_rel)
+c     Compute the vorticity field
+      temp_a = exp(-r_rel*r_rel/temp_b)
+      w_ = 1.0*GVRTX*temp_a/(PI*temp_b)  !!!!!4.0
+c     Compute the dutheta/dr field
+      temp_2 = -GVRTX/(2.0*PI*r_rel*r_rel) !!!
+      temp_4 = GVRTX/(2.0*PI*r_rel) !!!
+      temp_5 = 2.0*r_rel*temp_a/temp_b
+      du_ = temp_1*temp_2 + temp_4*temp_5
 
 
       return
       end
+
+
 c-----------------------------------------------------------------------
 c    subroutine to compute the velocity field and pressure (u_, v_, p_) induced by a
 c    Taylor-Green vortex field at a position x_, y_
@@ -410,8 +420,10 @@ c      implicit none
                         if(boundaryID(iside,ie).eq.1) then !boundary 1 is the outer boundary
                               if (BCLCGB.eq.0) then
                                     cbc(iside,ie,1) = "v  " !global coord
-                              else
+                              else if (BCLCGB.eq.1) then
                                     cbc(iside,ie,1) = "vl " !local coord
+                              else if (BCLCGB.eq.2) then
+                                    cbc(iside,ie,1) = "shl" !shl coord
                               endif
                         endif 
                   enddo
