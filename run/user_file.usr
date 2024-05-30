@@ -114,7 +114,7 @@ c      implicit none
        
 
       else if (BCLCGB.eq.2) then
-      tr1 = 0.0*2.0*cpfld(1,1)*(du_ - 0.5*w_)
+      tr1 = 2.0*cpfld(1,1)*(du_ - 0.5*w_)
       tr2 = 0.0      
       
       endif
