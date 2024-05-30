@@ -1,0 +1,4 @@
+# Ignore everything in this directory?
+*/*.f*
+# Except this file
+!.gitignore
