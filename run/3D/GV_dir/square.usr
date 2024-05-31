@@ -138,7 +138,7 @@ c      implicit none
       WTSC = uparam(8)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x,y,z,u_,v_,w_ p_, om_, du_) ! compute the exact solution
+            call GVLFD(x,y,z,u_,v_,w_, p_, om_, du_) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x,y,u_,v_, p_)
       endif
@@ -161,7 +161,7 @@ c      implicit none
       include 'TOTAL'
 
       integer i,j,ie
-      real u_, v_, w_ p_, om_, du_
+      real u_, v_, w_, p_, om_, du_
       real dump1, dump2,Linfu, Linfv, Linfw, LinfP,L2u, L2v,L2w, L2P
       real L2Mg, LinfMg
       real GVRTX, SVRTX, UTGV, PTGV

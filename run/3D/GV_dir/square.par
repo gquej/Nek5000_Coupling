@@ -2,14 +2,14 @@
 # nek parameter file
 #
 [GENERAL]
-dt = 1e-3
-numsteps = 10000
+dt = 1e-5
+numsteps = 1000
 writeInterval = 50
 userParam01 = 1.0   #vortex circulation [m^2/s] or TGV characteristic velocity (m/s)
 userParam02 = 0.1    #vortex radius [m] or TGV period (m)
-userParam03 = -1.0  #vortex initial x position [m]
-userParam04 = 1.0   #vortex initial y position [m]
-userParam10 = -0.2 #vortex initial z position [m]
+userParam03 = -0.475  #vortex initial x position [m]
+userParam04 = 0.475   #vortex initial y position [m]
+userParam10 = 0.325 #vortex initial z position [m]
 userParam05 =  0.175   #vortex x velocity [m/s]
 userParam06 = -0.175  #vortex y velocity [m/s]
 userParam11 = 0.175  #vortex z velocity [m/s]
