@@ -10,14 +10,14 @@ c
 
       ! BASIC
       parameter (ldim=3)               ! domain dimension (2 or 3)
-      parameter (lx1=10)                ! GLL points per element along each direction
-      parameter (lxd=15)               ! GL  points for over-integration (dealiasing) 
+      parameter (lx1=6)                ! GLL points per element along each direction
+      parameter (lxd=9)               ! GL  points for over-integration (dealiasing) 
       parameter (lx2=lx1)            ! GLL points for pressure (lx1 or lx1-2)
                                      
-      parameter (lelg=1728)            ! max number of global elements
+      parameter (lelg=512)            ! max number of global elements
       parameter (lpmin=1)              ! min number of MPI ranks 
       parameter (lelt=lelg/lpmin + 3)  ! max number of local elements per MPI rank
-      parameter (ldimt=7)              ! max auxiliary fields (temperature + scalars)
+      parameter (ldimt=10)              ! max auxiliary fields (temperature + scalars)
 
       ! OPTIONAL
       parameter (ldimt_proj=1)         ! max auxiliary fields residual projection

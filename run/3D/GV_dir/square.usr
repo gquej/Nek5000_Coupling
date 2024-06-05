@@ -96,7 +96,8 @@ c      implicit none
       BCLCGB = uparam(9)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x, y, z, u_, v_, w_, p_, om_, du_) ! compute the exact solution
+            call GVLFD(x, y, z, u_, v_, w_, p_, om_, du_,
+     &        pgx, pgy, pgz) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
       endif
@@ -138,7 +139,7 @@ c      implicit none
       WTSC = uparam(8)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x,y,z,u_,v_,w_, p_, om_, du_) ! compute the exact solution
+            call GVLFD(x,y,z,u_,v_,w_, p_, om_, du_, pgx, pgy, pgz) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x,y,u_,v_, p_)
       endif
@@ -164,13 +165,20 @@ c      implicit none
       real u_, v_, w_, p_, om_, du_
       real dump1, dump2,Linfu, Linfv, Linfw, LinfP,L2u, L2v,L2w, L2P
       real L2Mg, LinfMg
+      real L2gx, L2gy, L2gz, Linfgx,Linfgy,Linfgz
+      real L2gp, Linfgp
       real GVRTX, SVRTX, UTGV, PTGV
-      real ADMU2, ADMUI, ADMP2,ADMPI ! adim coefficients for the errors
+      real ADMU2, ADMUI, ADMP2,ADMPI, ADMPG2, ADMPGI ! adim coefficients for the errors
       integer WTSC !0 for Gaussian vortex, 1 for TGV
       real DBGP !global pressure offset 
       real SDBF(1)
       real RVBF(1)
       real uunx, uuny, uunz
+      real pgx, pgy, pgz !analytical pressure gradient vector
+      real pgxs(lx1,ly1,lz1,lelv) !solver pressure gradient vector x
+      real pgys(lx1,ly1,lz1,lelv) !solver pressure gradient vector y
+      real pgzs(lx1,ly1,lz1,lelv) !solver pressure gradient vector z
+
 
       WTSC = uparam(8)
 
@@ -181,6 +189,8 @@ c      implicit none
             ADMUI = SVRTX/GVRTX
             ADMP2 = sqrt(SVRTX)/(cpfld(1,2)*GVRTX*GVRTX)
             ADMPI = SVRTX*SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
+            ADMPG2 = SVRTX*sqrt(SVRTX)/(cpfld(1,2)*GVRTX*GVRTX)
+            ADMPGI = SVRTX*SVRTX*SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
       else                          !Taylor-Green vortex
             UTGV = uparam(1) !Characteristic velocity of the TGV
             PTGV = uparam(2) !Wavelength of the TGV
@@ -196,7 +206,7 @@ c     Compute the exact solution at each grid point, then the relative
 c     error in u, v and Umag
       if(WTSC.eq.0) then
             call GVLFD(xm1(1,1,1,1),ym1(1,1,1,1),zm1(1,1,1,1),
-     &       u_,v_, w_, p_, om_, du_)
+     &       u_,v_, w_, p_, om_, du_, pgx, pgy, pgz)
       else
             call TVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
       endif
@@ -204,6 +214,7 @@ c     error in u, v and Umag
       SDBF(1) = DBGP
       call bcast(SDBF,8) !broadcast the global pressure offset on rank 0 (8 bytes for real)
       DBGP = SDBF(1)
+      call gradm1(pgxs,pgys,pgzs,pr) ! compute pressure gradient
 
       do ie=1,nelv
       do k = 1,lz1
@@ -211,7 +222,7 @@ c     error in u, v and Umag
       do i = 1,lx1
             if(WTSC.eq.0) then
                   call GVLFD(xm1(i,j,k,ie),ym1(i,j,k,ie), 
-     &             zm1(i,j,k,ie),u_,v_,w_, p_, om_, du_) ! compute the exact solution
+     &             zm1(i,j,k,ie),u_,v_,w_, p_, om_, du_, pgx, pgy, pgz) ! compute the exact solution
             else
                   call TVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_, p_) ! compute the exact solution
             endif
@@ -219,6 +230,21 @@ c     error in u, v and Umag
             t(i,j,k,ie,3) = (vy(i,j,k,ie) - v_)
             t(i,j,k,ie,4) = (vz(i,j,k,ie) - w_)
             t(i,j,k,ie,5) = (pr(i,j,k,ie) - p_-DBGP)
+
+            t(i,j,k,ie,7) = (pgxs(i,j,k,ie) - pgx)
+            t(i,j,k,ie,8) = (pgys(i,j,k,ie) - pgy)
+            t(i,j,k,ie,9) = (pgzs(i,j,k,ie) - pgz)
+c            t(i,j,k,ie,9) = sqrt(pgx**2+pgy**2+pgz**2) - 
+c     &       sqrt(pgxs(i,j,k,ie)**2 + pgys(i,j,k,ie)**2 +
+c     & pgzs(i,j,k,ie)**2)
+c            t(i,j,k,ie,9) = -pgxs(i,j,k,ie) -pgx
+c            t(i,j,k,ie,9) = sqrt(pgxs(i,j,k,ie)**2 + pgys(i,j,k,ie)
+c     &       **2 + pgzs(i,j,k,ie)**2)
+            
+
+c            print *, pgxs(i,j,k,ie), pgx, pgx
+c            print *, pgys(i,j,k,ie), pgy
+c            print *, pgzs(i,j,k,ie), pgz
 
             t(i,j,k,ie,6) = 0.0
       enddo
@@ -236,6 +262,12 @@ c     Integrate the error over the domain on u, v and Umag (in L2 and Linf sense
      &             t(:,:,:,:,6),t(:,:,:,:,6))
       call normvc(dump1,dump2,L2P,LinfP,t(:,:,:,:,5),
      &             t(:,:,:,:,6),t(:,:,:,:,6))
+      call normvc(dump1,dump2,L2gx,Linfgx,t(:,:,:,:,7),
+     &             t(:,:,:,:,6),t(:,:,:,:,6))
+      call normvc(dump1,dump2,L2gy,Linfgy,t(:,:,:,:,8),
+     &             t(:,:,:,:,6),t(:,:,:,:,6))
+      call normvc(dump1,dump2,L2gz,Linfgz,t(:,:,:,:,9),
+     &             t(:,:,:,:,6),t(:,:,:,:,6))  
     
 c      print *, time, Linfu
 
@@ -244,23 +276,28 @@ c     Normalize the errors
       L2v = L2v*L2v*VOLVM1
       L2w = L2w*L2w*VOLVM1
       L2P = L2P*L2P*VOLVM1
+      L2gx = L2gx*L2gx*VOLVM1
+      L2gy = L2gy*L2gy*VOLVM1
+      L2gz = L2gz*L2gz*VOLVM1
       L2Mg = ADMU2*sqrt(L2u + L2v + L2w) !L2 norm of the velocity magnitude
       L2P  = ADMP2*sqrt(L2P) !L2 norm of the pressure
       LinfMg = ADMUI*(Linfu + Linfv + Linfw) !Linf norm of the velocity magnitude
       LinfP  = ADMPI*LinfP !Linf norm of the pressure
+      L2gp = ADMPG2*sqrt(L2gx + L2gy + L2gz) !L2 norm of the pressure gradient
+      Linfgp = ADMPGI*(Linfgx + Linfgy + Linfgz) !Linf norm of the pressure gradient
 
 
 c     Write the errors to a file
       if (istep.eq.0 .and. nid.eq.0) then
       open(789,file='errors.txt',status='unknown',action='write')
-      write (789, '(6(ES25.16))') time, L2Mg, L2P,
-     & LinfMg, LinfP, DBGP
+      write (789, '(8(ES25.16))') time, L2Mg, L2P,
+     & LinfMg, LinfP, DBGP, L2gp, Linfgp
       close(789)
       end if
       if (nid.eq.0 .and. istep.gt.0) then
       open(789,file='errors.txt',action='write',position='append')
-      write (789, '(6(ES25.16))') time, L2Mg, L2P,
-     & LinfMg, LinfP, DBGP
+      write (789, '(8(ES25.16))') time, L2Mg, L2P,
+     & LinfMg, LinfP, DBGP, L2gp, Linfgp
       close(789)
       end if
 
@@ -315,7 +352,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 c     subroutine to compute the velocity field (u_, v_), pressure, vorticity and dutheta/dr induced by a 
 c     diffusing gaussian vorticity field at a position x_, y_,
-      subroutine GVLFD (x_, y_, z_, u_, v_, w_, p_, om_, du_ )
+      subroutine GVLFD (x_, y_, z_, u_, v_, w_, p_,
+     &        om_, du_, pgx, pgy, pgz)
 c      implicit none 
       include 'SIZE'
       include 'TOTAL'
@@ -324,6 +362,8 @@ c      implicit none
       real x_, y_, z_, u_, v_, w_, p_, om_, du_
       real x0, y0, z0, x_v, y_v, z_v, x_rel, y_rel, z_rel,  r_rel
       real temp_1,temp_a,temp_b,temp_2,temp_3,temp_4,temp_5,temp_6
+      real pgx, pgy, pgz !analytical pressure gradient vector
+      real pg !analytical pressure gradient magnitude
 
       real l_x, l_y, l_z ! line director vector
       real xxp, yyp, zzp ! orthogonal projection of the point on the line
@@ -379,6 +419,10 @@ c     Compute the dutheta/dr field
       temp_5 = 2.0*r_rel*temp_a/temp_b
       du_ = temp_1*temp_2 + temp_4*temp_5
 
+c     Compute the pressure gradient
+      pg = cpfld(1,2)*uthet**2.0/r_rel
+      call PG3D(x_,y_,z_,xxp,yyp,zzp,pgx,pgy,pgz,pg)
+
 
       return
       end
@@ -397,6 +441,22 @@ c      implicit none
       yyp = yl + (lly*llx*(xx-xl)+lly**2*(yy-yl)+lly*llz*(zz-zl))/D
       zzp = zl + (llz*llx*(xx-xl)+llz*lly*(yy-yl)+llz**2*(zz-zl))/D
 
+
+      return
+      end
+c-----------------------------------------------------------------------
+c     subroutine to compute the radial pressure gradient
+      subroutine PG3D (xx,yy,zz,xxp,yyp,zzp,ut,vt,wt,pg)
+c      implicit none 
+      include 'SIZE'
+      include 'TOTAL'
+
+      real xx, yy, zz, xxp, yyp, zzp, ut, vt, wt, pg
+      real r,norml
+      r = sqrt((xx-xxp)**2 + (yy-yyp)**2 + (zz-zzp)**2) + 1.0e-14
+      ut = pg*(xx-xxp)/(r)
+      vt = pg*(yy-yyp)/(r)
+      wt = pg*(zz-zzp)/(r)
 
       return
       end

@@ -2,8 +2,8 @@
 # nek parameter file
 #
 [GENERAL]
-dt = 1e-5
-numsteps = 1000
+dt = 1e-3
+numsteps = 2000
 writeInterval = 50
 userParam01 = 1.0   #vortex circulation [m^2/s] or TGV characteristic velocity (m/s)
 userParam02 = 0.1    #vortex radius [m] or TGV period (m)
@@ -56,3 +56,24 @@ density = 1
 diffusivity= 1
 solver = none
 advection  = no
+
+[SCALAR06] #temp scalar to have a zero-valued field
+density = 1
+diffusivity= 1
+solver = none
+advection  = no
+
+
+[SCALAR07] #temp scalar to have a zero-valued field
+density = 1
+diffusivity= 1
+solver = none
+advection  = no
+
+
+[SCALAR08] #temp scalar to have a zero-valued field
+density = 1
+diffusivity= 1
+solver = none
+advection  = no
+
