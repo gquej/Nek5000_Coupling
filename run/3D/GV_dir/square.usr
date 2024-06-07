@@ -234,18 +234,6 @@ c     error in u, v and Umag
             t(i,j,k,ie,7) = (pgxs(i,j,k,ie) - pgx)
             t(i,j,k,ie,8) = (pgys(i,j,k,ie) - pgy)
             t(i,j,k,ie,9) = (pgzs(i,j,k,ie) - pgz)
-c            t(i,j,k,ie,9) = sqrt(pgx**2+pgy**2+pgz**2) - 
-c     &       sqrt(pgxs(i,j,k,ie)**2 + pgys(i,j,k,ie)**2 +
-c     & pgzs(i,j,k,ie)**2)
-c            t(i,j,k,ie,9) = -pgxs(i,j,k,ie) -pgx
-c            t(i,j,k,ie,9) = sqrt(pgxs(i,j,k,ie)**2 + pgys(i,j,k,ie)
-c     &       **2 + pgzs(i,j,k,ie)**2)
-            
-
-c            print *, pgxs(i,j,k,ie), pgx, pgx
-c            print *, pgys(i,j,k,ie), pgy
-c            print *, pgzs(i,j,k,ie), pgz
-
             t(i,j,k,ie,6) = 0.0
       enddo
       enddo
@@ -269,7 +257,6 @@ c     Integrate the error over the domain on u, v and Umag (in L2 and Linf sense
       call normvc(dump1,dump2,L2gz,Linfgz,t(:,:,:,:,9),
      &             t(:,:,:,:,6),t(:,:,:,:,6))  
     
-c      print *, time, Linfu
 
 c     Normalize the errors
       L2u = L2u*L2u*VOLVM1
