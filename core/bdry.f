@@ -59,7 +59,7 @@ C
             IF  (CB.EQ.'VL ' .OR. CB.EQ.'vl ' .OR.
      $           CB.EQ.'WSL' .OR. CB.EQ.'wsl' .OR.
      $           CB.EQ.'SL ' .OR. CB.EQ.'sl ' .OR.
-     $           CB.EQ.'SHL' .OR. CB.EQ.'shl' .OR.
+     $           CB.EQ.'SHL' .OR. CB.EQ.'shl' .OR. CB.EQ.'snl' .OR.
      $           CB.EQ.'MM ' .OR. CB.EQ.'mm ' .OR.
      $           CB.EQ.'MS ' .OR. CB.EQ.'ms ' .OR.
      $           CB.EQ.'O  ' .OR. CB.EQ.'o  ' .OR.
@@ -287,7 +287,7 @@ C
 
 C     Laplacian formulation only
       IF  (CB.EQ.'SH ' .OR.  CB.EQ.'sh ' .OR.
-     $     CB.EQ.'SHL' .OR.  CB.EQ.'shl' .OR.
+     $     CB.EQ.'SHL' .OR.  CB.EQ.'shl' .OR. CB.EQ.'snl' .OR.
      $     CB.EQ.'S  ' .OR.  CB.EQ.'s  ' .OR.
      $     CB.EQ.'SL ' .OR.  CB.EQ.'sl ' .OR.
      $     CB.EQ.'MM ' .OR.  CB.EQ.'mm ' .OR.
@@ -659,6 +659,14 @@ c     write(6,*) 'BCDIRV: ifield',ifield
                 ifonbc =.true.
                 CALL FACEIV ('v  ',TMP1(1,1,1,IE),TMP2(1,1,1,IE),
      $                       TMP3(1,1,1,IE),IE,IFACE,lx1,ly1,lz1)
+            ENDIF
+
+            IF (CB.EQ.'snl') then   ! 4/27/24
+                CALL FACEIV ('vl ',TMP1(1,1,1,IE),TMP2(1,1,1,IE),
+     $                       TMP3(1,1,1,IE),IE,IFACE,lx1,ly1,lz1)
+                IF ( IFQINP(IFACE,IE) )
+     $          CALL GLOBROT (TMP1(1,1,1,IE),TMP2(1,1,1,IE),
+     $                        TMP3(1,1,1,IE),IE,IFACE)
             ENDIF
 
  2000    CONTINUE
@@ -1076,7 +1084,7 @@ C
   200    CONTINUE
          RETURN
 C
-      ELSEIF (CB.EQ.'sl ' .OR. CB.EQ.'shl') THEN
+      ELSEIF (CB.EQ.'sl ' .OR. CB.EQ.'shl' .OR. CB.EQ.'snl') THEN
 C
          DO 220 IZ=KZ1,KZ2
          DO 220 IY=KY1,KY2
@@ -1236,7 +1244,7 @@ C
              GOTO 120
          ENDIF
          IF (CB.EQ.'s  ' .OR. CB.EQ.'sl ' .OR.
-     $       CB.EQ.'sh ' .OR. CB.EQ.'shl' ) THEN
+     $       CB.EQ.'sh ' .OR. CB.EQ.'shl' .OR. CB.EQ.'snl' ) THEN
              CALL FACEIV (CB,TRX,TRY,TRZ,IEL,IFC,lx1,ly1,lz1)
              CALL FACCVS (TRX,TRY,TRZ,AREA(1,1,IFC,IEL),IFC)
              IF (IFQINP(IFC,IEL)) CALL GLOBROT (TRX,TRY,TRZ,IEL,IFC)
@@ -2229,3 +2237,4 @@ c-----------------------------------------------------------------------
 
       return
       end
+
