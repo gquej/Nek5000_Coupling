@@ -1,0 +1,27 @@
+c     prcvrt: coordinates of the vertices, v1_x,v1_y,v1_z,v2_x,v2_y,v2_z,...
+c     prcvid: id of the vertices
+c     prcwdt: buffer of data to be written to the other solver
+c     prcrdt: buffer of data to be read from the other solver
+c     prcdt: time step
+c     prcdim: dimension of the problem
+c     prcnve: number of vertices
+c     mpgprc: mapping between the outer boundary vertices and the unique vertices of the mesh boundary
+      real prcvrt (0:200000) !77 
+      integer prcvid (0:200000) !25
+      real prcwdt (0:200000)
+      real prcrdt (0:200000)
+      real prcdt
+      integer prcdim
+      integer prcnve
+      integer mpgprc (lx1,ly1,lz1,lelv)
+      character parnm*100
+      character config*100
+      character meshnm*100
+      character rdDtNm*100
+      character wrDtNm*100
+
+      common /precic/ prcvrt, mpgprc, prcnve, prcwdt, prcrdt
+      common /precic/ prcdt, parnm, config, meshnm, rdDtNm, wrDtNm
+      common /precic/ prcdim
+      common /precic/ prcvid
+    

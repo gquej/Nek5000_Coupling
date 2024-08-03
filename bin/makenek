@@ -22,11 +22,13 @@ set -a
 #-------------------------------------------------------------------------------
 
 # optional compiler flags
-#FFLAGS=""
-#CFLAGS=""
+FFLAGS="-mcmodel=small" # -I/usr/local/include -L/usr/local/lib -lprecice"
+CFLAGS="-mcmodel=small" # -I/usr/local/include -L/usr/local/lib -lprecice"
 
 # optional linking flags
-#USR_LFLAGS+=" -L/usr/lib -lfoo"
+USR_LFLAGS+=" -I/soft/precice/include -L/soft/precice/lib -lprecice -Wl,-rpath,/soft/precice/lib"
+USR_LFLAGS+=" -I/soft/petsc/include -L/soft/petsc/lib -lpetsc -Wl,-rpath,/soft/petsc/lib"
+
 
 # auxilliary files to compile
 # NOTE: source files have to located in the same directory as makenek
@@ -51,7 +53,8 @@ set -a
 ###############################################################################
 # DONT'T TOUCH WHAT FOLLOWS !!!
 ###############################################################################
-: ${NEK_SOURCE_ROOT:="$HOME/Nek5000"}
+: ${NEK_SOURCE_ROOT:="/home/coupling/Coupling/Nek5000_Coupling"}  LINE FOR THE DOCKER
+#: ${NEK_SOURCE_ROOT:="$HOME/PhD/Coupling/Nek5000_Coupling"}
 echo "using source path: $NEK_SOURCE_ROOT"
 VERMAKENEK="19.0.1"
 set +a -e

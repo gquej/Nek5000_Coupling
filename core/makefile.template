@@ -50,7 +50,7 @@ vprops.o makeq_aux.o \
 papi.o nek_in_situ.o \
 reader_rea.o reader_par.o reader_re2.o \
 finiparser.o iniparser.o dictionary.o \
-hpf.o \
+hpf.o precic.o\
 fcrs.o crs_xxt.o crs_amg.o \
 fem_amg_preco.o crs_hypre.o \
 partitioner.o
@@ -188,6 +188,7 @@ $(OBJDIR)/navier8.o	:$S/core/navier8.f;			$(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/speclib.o	:$S/core/speclib.f;			$(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/calcz.o	:$S/core/calcz.f;			$(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/fast3d.o	:$S/core/fast3d.f;			$(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/precic.o	:$S/core/precic.f;			$(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/dssum.o	:$S/core/dssum.f;			$(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/eigsolv.o	:$S/core/eigsolv.f;			$(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/gauss.o	:$S/core/gauss.f;			$(FC) -c $(FL2) $< -o $@

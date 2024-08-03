@@ -85,11 +85,13 @@ c      implicit none
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
+      include 'PRECIC'
       integer ix,iy,iz,iside,eg
       real u_, v_, w_, p_, om_, du_
       integer WTSC !0 for Gaussian vortex, 1 for TGV
       integer BCLCGB ! if BC's expresse in local or global coord
       real uunx, uuny, uunz, t1xx, t1yy, t1zz, t2xx, t2yy, t2zz
+      integer prcmpi ! precice mapping index
 
 
       WTSC = uparam(8)
@@ -101,6 +103,10 @@ c      implicit none
       else                          !Taylor-Green vortex
             call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
       endif
+      prcmpi = mpgprc(ix,iy,iz,eg)
+      u_ = prcrdt(3*prcmpi)
+      v_ = prcrdt(3*prcmpi+1)
+      w_ = prcrdt(3*prcmpi+1)
       if(BCLCGB.eq.0) then
             ux = u_
             uy = v_
@@ -143,6 +149,9 @@ c      implicit none
       else                          !Taylor-Green vortex
             call TVLFD(x,y,u_,v_, p_)
       endif
+      u_ = 0.0
+      v_ = 0.0
+      w_ = 0.1
       ux = u_
       uy = v_
       uz = w_

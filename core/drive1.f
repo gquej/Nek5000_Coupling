@@ -7,6 +7,7 @@ c
 c
       include 'OPCTR'
       include 'CTIMER'
+      include 'PRECIC'
 
 C     used scratch arrays
 C     NOTE: no initial declaration needed. Linker will take 
@@ -169,6 +170,17 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
      &     ' Initialization successfully completed ', tinit, ' sec'
       endif
 
+      parnm = 'Nek'
+      config = '../../../../Coupling_dir/precice-config.xml'
+      meshnm = 'Nek-Mesh'
+      rdDtNm = 'Data1'
+      wrDtNm = 'Data2'
+      prcdim = 3
+      call precicef_create(parnm,config,0,1)
+      call prc_omesh
+      call precicef_set_vertices(meshnm,prcnve, prcvrt, prcvid)
+      call precicef_initialize()
+
       return
       end
 c-----------------------------------------------------------------------
@@ -178,6 +190,8 @@ c-----------------------------------------------------------------------
       include 'TSTEP'
       include 'INPUT'
       include 'CTIMER'
+      INCLUDE 'PRECIC'
+      integer i,j
 
       call nekgsync()
 
@@ -205,6 +219,10 @@ c-----------------------------------------------------------------------
       irstat = int(param(120))
 
       do kstep=1,nsteps,msteps
+         prcdt = 0.001
+         call precicef_read_data(meshnm, rdDtNm, prcnve, 
+     &    prcvid ,prcdt, prcrdt)
+         ! call precicef_write_data(mshnm, wrDtNm, 10, vertID , wrDt)
          call nek__multi_advance(kstep,msteps)
          if(kstep.ge.nsteps) lastep = 1
          call check_ioinfo  
@@ -216,6 +234,7 @@ c-----------------------------------------------------------------------
          call in_situ_check()
          if (mod(kstep,irstat).eq.0 .and. lastep.eq.0) call runstat 
          if (lastep .eq. 1) goto 1001
+         call precicef_advance(prcdt)
       enddo
  1001 lastep=1
 
@@ -342,6 +361,7 @@ c         call fgslib_crs_free(xxth_strs)
 c      else
 c         call fgslib_crs_free(xxth(1))
 c      endif
+      call precicef_finalize()
 
 #ifdef DPROCMAP
 #ifdef MPI
