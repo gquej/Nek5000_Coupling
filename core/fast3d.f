@@ -838,7 +838,6 @@ c     ibc = 2  <==>  Neumann,
          if (cbc(ied,e,ifield).eq.'mv ') ibc = 2
          if (cbc(ied,e,ifield).eq.'mvn') ibc = 2
          if (cbc(ied,e,ifield).eq.'v  ') ibc = 2
-         if (cbc(ied,e,ifield).eq.'vl ') ibc = 2
          if (cbc(ied,e,ifield).eq.'V  ') ibc = 2
          if (cbc(ied,e,ifield).eq.'W  ') ibc = 2
          if (cbc(ied,e,ifield).eq.'SYM') ibc = bsym
@@ -846,6 +845,7 @@ c     ibc = 2  <==>  Neumann,
          if (cbc(ied,e,ifield).eq.'sl ') ibc = 2
          if (cbc(ied,e,ifield).eq.'SHL') ibc = 2
          if (cbc(ied,e,ifield).eq.'shl') ibc = 2
+         if (cbc(ied,e,ifield).eq.'snl') ibc = 2
          if (cbc(ied,e,ifield).eq.'A  ') ibc = 2
          if (cbc(ied,e,ifield).eq.'S  ') ibc = 2
          if (cbc(ied,e,ifield).eq.'s  ') ibc = 2
@@ -1648,3 +1648,5 @@ c
       return
       end
 c-----------------------------------------------------------------------
+
+

@@ -761,7 +761,7 @@ C
          IF (CB.EQ.'SYM' .OR. CB.EQ.'A  ' .OR. CB.EQ.'WS ' .OR.
      $       CB.EQ.'ws ' .OR. CB.EQ.'WSL' .OR. CB.EQ.'wsl' .OR. 
      $       CB.EQ.'SH ' .OR. CB.EQ.'sh ' .OR. CB.EQ.'SHL' .OR. 
-     $       CB.EQ.'shl')                                  THEN
+     $       CB.EQ.'shl' .OR. CB.EQ.'snl')                 THEN
              CALL FACEV (HVMASK,IEL,IFC,2.0,lx1,ly1,lz1)
              CALL CFILL (HFMASK(1,1,IFC,IEL),2.0,NXZ1)
          ENDIF
@@ -2278,3 +2278,5 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+
+

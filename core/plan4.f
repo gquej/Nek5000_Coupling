@@ -81,12 +81,13 @@ c
          tpres=tpres+(dnekclock()-etime1)
 
          ! compute velocity
-         if(ifstrs .and. .not.ifaxis) then
+c         if(ifstrs .and. .not.ifaxis) then
+c            call bcneutr
+c            call cresvsp_weak(res1,res2,res3,h1,h2)
+c         else
             call bcneutr
-            call cresvsp_weak(res1,res2,res3,h1,h2)
-         else
             call cresvsp     (res1,res2,res3,h1,h2)
-         endif
+c         endif
          call ophinv       (dv1,dv2,dv3,res1,res2,res3,h1,h2,tolhv,nmxv)
          call opadd2       (vx,vy,vz,dv1,dv2,dv3)
 
@@ -225,7 +226,8 @@ C     surface terms
      $      CALL RZERO  (W3(1,IEL),NXYZ1)
             CB = CBC(IFC,IEL,IFIELD)
             IF (CB(1:1).EQ.'V'.OR.CB(1:1).EQ.'v'.or.
-     $         cb.eq.'MV '.or.cb.eq.'mv '.or.cb.eq.'shl') then
+     $         cb.eq.'MV '.or.cb.eq.'mv '.or.cb.eq.'shl'
+     $                                   .or.cb.eq.'snl') then
                CALL FACCL3
      $         (W1(1,IEL),VX(1,1,1,IEL),UNX(1,1,IFC,IEL),IFC)
                CALL FACCL3
@@ -247,7 +249,7 @@ C     surface terms
      $      CALL ADD2   (W1(1,IEL),W3(1,IEL),NXYZ1)
             CALL FACCL2 (W1(1,IEL),AREA(1,1,IFC,IEL),IFC)
             IF (CB(1:1).EQ.'V'.OR.CB(1:1).EQ.'v'.or.
-     $         cb.eq.'MV '.or.cb.eq.'mv ') then
+     $         cb.eq.'MV '.or.cb.eq.'mv '.or.cb.eq.'snl') then
               CALL CMULT(W1(1,IEL),dtbd,NXYZ1)
             endif
             CALL SUB2 (RESPR(1,IEL),W1(1,IEL),NXYZ1)
@@ -771,3 +773,5 @@ C
       END
 C
 c-----------------------------------------------------------------------
+
+
