@@ -92,3 +92,12 @@ c
 
       integer boundaryID(6,lelv), boundaryIDt(6,lelt)
       common /cbbid/ boundaryID, boundaryIDt
+
+      ! real matsnl(2*lx1m*2*ldim,2*lx1m*2*ldim,lelt)
+      ! integer persnl(2*lx1m*2*ldim,lelt)
+      ! real rhssnl(2*lx1m*2*ldim,lelt)
+      real usol(lx1m*2*ldim,lelt) !new simplified implementation
+      real vsol(lx1m*2*ldim,lelt)
+
+      ! common /pernw/ matsnl, persnl, rhssnl, xsol
+      common /pernw/ usol, vsol

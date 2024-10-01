@@ -90,14 +90,19 @@ c      implicit none
       integer WTSC !0 for Gaussian vortex, 1 for TGV
       integer BCLCGB ! if BC's expresse in local or global coord
       real uunx, uuny, uunz, t1xx, t1yy, t1zz, t2xx, t2yy, t2zz
+      real  dudx, dudy, dudz, dvdx, dvdy,
+     &        dvdz, dwdx, dwdy, dwdz
+      real dut1dn, dut2dn
+      integer do
 
 
       WTSC = uparam(8)
       BCLCGB = uparam(9)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x, y, z, u_, v_, w_, p_, om_, du_,
-     &        pgx, pgy, pgz) ! compute the exact solution
+            call GVLFD2(x, y, z, u_, v_, w_, p_, om_, du_,
+     &        pgx, pgy, pgz, dudx, dudy, dudz, dvdx, dvdy,
+     &        dvdz, dwdx, dwdy, dwdz) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
       endif
@@ -113,10 +118,49 @@ c      implicit none
        u1 = u_*t1xx + v_*t1yy + w_*t1zz
        u2 = u_*t2xx + v_*t2yy + w_*t2zz
        
-
+      
       else if (BCLCGB.eq.2) then
-      tr1 = 2.0*cpfld(1,1)*(du_ - 0.5*w_) !! warning this does not work!!!!!!!!!
-      tr2 = 2.0*cpfld(1,1)*(du_ + 0.5*w_)     
+      if(iside.eq.1.or.iside.eq.3) then
+            do = 1
+      else if (iside.eq.2.or.iside.eq.4) then
+            if (iy.eq.1.or.iy.eq.ly1) then
+                  do = 0
+            else
+                  do = 1
+            endif
+      else if(iside.eq.5.or.iside.eq.6) then
+            if(iy.eq.1.or.iy.eq.ly1.or.ix.eq.1.or.ix.eq.lx1 ) then
+                  do = 0
+            else
+                  do = 1
+            endif
+      endif
+
+
+      if(do.eq.1) then
+      call FDNRML(ix,iy,iz,iside,eg,uunx,uuny,uunz,t1xx,t1yy
+     & ,t1zz,t2xx,t2yy,t2zz)
+      dut1dn = uunx*(dudx*t1xx+ dvdx*t1yy + dwdx*t1zz) + uuny*
+     & (dudy*t1xx+ dvdy*t1yy + dwdy*t1zz) + uunz*
+     & (dudz*t1xx+ dvdz*t1yy + dwdz*t1zz)
+      dut2dn = uunx*(dudx*t2xx+ dvdx*t2yy + dwdx*t2zz) + uuny*
+     & (dudy*t2xx+ dvdy*t2yy + dwdy*t2zz) + uunz*
+     & (dudz*t2xx+ dvdz*t2yy + dwdz*t2zz)
+c      u_ = 0.01
+c      v_ = 0.0
+c      w_ = 0.0
+      un = u_*uunx + v_*uuny + w_*uunz
+c      u1 = u_*t1xx + v_*t1yy + w_*t1zz
+c      u2 = u_*t2xx + v_*t2yy + w_*t2zz
+c      u1 = u_*t1xx + v_*t1yy + w_*t1zz
+c      u2 = u_*t2xx + v_*t2yy + w_*t2zz
+      print *,iside, ix,iy,iz, do
+      tr1 = 2.0*cpfld(1,1)*(dut1dn - 0.5*om_*t1zz) !! warning this does not work!!!!!!!!!
+      tr2 = 2.0*cpfld(1,1)*(dut2dn + 0.5*om_*t2zz)     
+c      tr1 = 0.0
+c      tr2 = 0.0
+c      print *, iside, uunx,uuny,uunz
+      endif
       
       endif
 
@@ -134,15 +178,22 @@ c      implicit none
       include 'NEKUSE'
       integer ix,iy,iz,eg
       real u_, v_, w_, p_, om_, du_
+      real  dudx, dudy, dudz, dvdx, dvdy,
+     &dvdz, dwdx, dwdy, dwdz
       integer WTSC !0 for Gaussian vortex, 1 for TGV
 
       WTSC = uparam(8)
 
       if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x,y,z,u_,v_,w_, p_, om_, du_, pgx, pgy, pgz) ! compute the exact solution
+            call GVLFD2(x,y,z,u_,v_,w_, p_, om_, du_, pgx, pgy, pgz,
+     &        dudx, dudy, dudz, dvdx, dvdy,
+     &        dvdz, dwdx, dwdy, dwdz) ! compute the exact solution
       else                          !Taylor-Green vortex
             call TVLFD(x,y,u_,v_, p_)
       endif
+c      u_ = 0.01
+c      v_ = 0.0
+c      w_ = 0.0
       ux = u_
       uy = v_
       uz = w_
@@ -178,6 +229,8 @@ c      implicit none
       real pgxs(lx1,ly1,lz1,lelv) !solver pressure gradient vector x
       real pgys(lx1,ly1,lz1,lelv) !solver pressure gradient vector y
       real pgzs(lx1,ly1,lz1,lelv) !solver pressure gradient vector z
+      real  dudx, dudy, dudz, dvdx, dvdy,
+     &        dvdz, dwdx, dwdy, dwdz
 
 
       WTSC = uparam(8)
@@ -205,8 +258,10 @@ c      implicit none
 c     Compute the exact solution at each grid point, then the relative
 c     error in u, v and Umag
       if(WTSC.eq.0) then
-            call GVLFD(xm1(1,1,1,1),ym1(1,1,1,1),zm1(1,1,1,1),
-     &       u_,v_, w_, p_, om_, du_, pgx, pgy, pgz)
+            call GVLFD2(xm1(1,1,1,1),ym1(1,1,1,1),zm1(1,1,1,1),
+     &       u_,v_, w_, p_, om_, du_, pgx, pgy, pgz,
+     &  dudx, dudy, dudz, dvdx, dvdy,
+     &        dvdz, dwdx, dwdy, dwdz)
       else
             call TVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
       endif
@@ -221,8 +276,10 @@ c     error in u, v and Umag
       do j = 1,ly1
       do i = 1,lx1
             if(WTSC.eq.0) then
-                  call GVLFD(xm1(i,j,k,ie),ym1(i,j,k,ie), 
-     &             zm1(i,j,k,ie),u_,v_,w_, p_, om_, du_, pgx, pgy, pgz) ! compute the exact solution
+                  call GVLFD2(xm1(i,j,k,ie),ym1(i,j,k,ie), 
+     &             zm1(i,j,k,ie),u_,v_,w_, p_, om_, du_, pgx, pgy, pgz,
+     &        dudx, dudy, dudz, dvdx, dvdy,
+     &        dvdz, dwdx, dwdy, dwdz) ! compute the exact solution
             else
                   call TVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_, p_) ! compute the exact solution
             endif
@@ -340,7 +397,8 @@ c-----------------------------------------------------------------------
 c     subroutine to compute the velocity field (u_, v_), pressure, vorticity and dutheta/dr induced by a 
 c     diffusing gaussian vorticity field at a position x_, y_,
       subroutine GVLFD (x_, y_, z_, u_, v_, w_, p_,
-     &        om_, du_, pgx, pgy, pgz)
+     &        om_, du_, pgx, pgy, pgz, dudx, dudy, dudz, dvdx, dvdy,
+     &        dvdz, dwdx, dwdy, dwdz)
 c      implicit none 
       include 'SIZE'
       include 'TOTAL'
@@ -356,6 +414,10 @@ c      implicit none
       real xxp, yyp, zzp ! orthogonal projection of the point on the line
       real uthet
       real xtemp,ytemp,ztemp ! temp for the second vortex
+      real dudx, dudy, dudz, dvdx, dvdy, !derivatives used for snl conditions
+     &  dvdz, dwdx, dwdy, dwdz
+      real dutdr
+      real sint,cost  !sine and cosine of the angle for axisym coord
 
 
       GVRTX    = uparam(1)     !vortex circulation
@@ -380,9 +442,23 @@ c      implicit none
       y_rel = y_ - yyp
       z_rel = z_ - zzp
       r_rel = sqrt(x_rel*x_rel + y_rel*y_rel + z_rel*z_rel) + 1.0e-14
+      sint = y_rel/r_rel
+      cost = x_rel/r_rel
       
       temp_1 = 1.0 - exp(-r_rel*r_rel/(SVRTX*SVRTX + 4.0*nu_*time))
       uthet = (GVRTX/(2.0*PI*r_rel))*temp_1
+      dutdr = -(GVRTX/(2.0*PI*r_rel*r_rel))*temp_1 + 
+     & (GVRTX/(2.0*PI*r_rel))*(exp(-r_rel*r_rel/(SVRTX*SVRTX + 
+     & 4.0*nu_*time))*2.0*r_rel/(SVRTX*SVRTX + 4.0*nu_*time))
+      dudx = sint*cost*(uthet/r_rel - dutdr)
+      dvdx = cost*cost*dutdr + sint*sint*uthet/r_rel
+      dwdx = 0.0
+      dudy = -sint*sint*dutdr - cost*cost*uthet/r_rel
+      dvdy = sint*cost*(dutdr -uthet/r_rel)
+      dwdy = 0.0
+      dudz = 0.0
+      dvdz = 0.0
+      dwdz = 0.0
       call UT3D(l_x,l_y,l_z,x_,y_,z_,xxp,yyp,zzp,u_,v_,w_,uthet)
       u_ = u_ + u_v
       v_ = v_ + v_v
@@ -413,7 +489,112 @@ c     Compute the pressure gradient
 
       return
       end
+c-----------------------------------------------------------------------
+c     subroutine to compute the velocity field (u_, v_), pressure, vorticity and dutheta/dr induced by a 
+c     diffusing gaussian vorticity field at a position x_, y_,
+      subroutine GVLFD2 (x_, y_, z_, u_, v_, w_, p_,
+     &        om_, du_, pgx, pgy, pgz, dudx, dudy, dudz, dvdx, dvdy,
+     &        dvdz, dwdx, dwdy, dwdz)
+c      implicit none 
+      include 'SIZE'
+      include 'TOTAL'
+ 
+      real GVRTX, SVRTX, nu_, u_v, v_v, w_v
+      real x_, y_, z_, u_, v_, w_, p_, om_, du_
+      real x0, y0, z0, x_v, y_v, z_v, x_rel, y_rel, z_rel,  r_rel
+      real temp_1,temp_a,temp_b,temp_2,temp_3,temp_4,temp_5,temp_6
+      real pgx, pgy, pgz !analytical pressure gradient vector
+      real pg !analytical pressure gradient magnitude
 
+      real l_x, l_y, l_z ! line director vector
+      real xxp, yyp, zzp ! orthogonal projection of the point on the line
+      real uthet
+      real xtemp,ytemp,ztemp ! temp for the second vortex
+      real dudx, dudy, dudz, dvdx, dvdy, !derivatives used for snl conditions
+     &  dvdz, dwdx, dwdy, dwdz
+      real dutdr
+      real sint,cost  !sine and cosine of the angle for axisym coord
+
+
+      GVRTX    = uparam(1)     !vortex circulation
+      SVRTX  = uparam(2)     !vortex sigma
+      x0  = uparam(3)     !vortex init x position
+      y0  = uparam(4)      !vortex init y position
+      z0  = uparam(10)      !vortex init z position
+      u_v = uparam(5)      !vortex x velocity
+      v_v = uparam(6)   !vortex y velocity
+      w_v = uparam(11)   !vortex z velocity
+      l_x = uparam(12)   !line director x
+      l_y = uparam(13)   !line director y
+      l_z = uparam(14)   !line director z
+      nu_ = cpfld(1,1)/cpfld(1,2)  !fluid kinematic viscosity
+
+      PI  = 4.*ATAN(1.0)      
+      x_v = x0 +time*u_v
+      y_v = y0 +time*v_v
+      z_v = z0 +time*w_v
+      call ORPJN(l_x,l_y,l_z,x_v,y_v,z_v,x_,y_,z_,xxp,yyp,zzp)
+      x_rel = x_ - xxp
+      y_rel = y_ - yyp
+      z_rel = z_ - zzp
+      r_rel = sqrt(x_rel*x_rel + y_rel*y_rel + z_rel*z_rel) + 1.0e-14
+      sint = y_rel/r_rel
+      cost = x_rel/r_rel
+      
+      temp_1 = 1.0 - exp(-r_rel*r_rel/(SVRTX*SVRTX + 4.0*nu_*time))
+      uthet = (GVRTX/(2.0*PI*r_rel))*temp_1
+      dutdr = -(GVRTX/(2.0*PI*r_rel*r_rel))*temp_1 + 
+     & (GVRTX/(2.0*PI*r_rel))*(exp(-r_rel*r_rel/(SVRTX*SVRTX + 
+     & 4.0*nu_*time))*2.0*r_rel/(SVRTX*SVRTX + 4.0*nu_*time))
+      dudx = sint*cost*(uthet/r_rel - dutdr)
+      dvdx = cost*cost*dutdr + sint*sint*uthet/r_rel
+      dudy = -sint*sint*dutdr - cost*cost*uthet/r_rel
+      dvdy = sint*cost*(dutdr -uthet/r_rel)
+      call UT3D(l_x,l_y,l_z,x_,y_,z_,xxp,yyp,zzp,u_,v_,w_,uthet)
+      u_ = u_ + u_v
+      v_ = v_ + v_v
+      w_ = w_ + w_v
+      u_ = 0.1*y_
+      v_ = 0.0
+      w_ = 0.0
+      dudx = 0.
+      dvdx = 0.
+      dwdx = 0.0
+      dudy = 0.1
+      dvdy = 0.
+      dwdy = 0.0
+      dudz = 0.0
+      dvdz = 0.0
+      dwdz = 0.0
+
+
+
+c     Compute the pressure field: not so simple!
+      temp_a = cpfld(1,2)*GVRTX*GVRTX/(4.0*PI*PI)
+      temp_b = 4.0*nu_*time + SVRTX*SVRTX
+      temp_2 = -2.0*r_rel*r_rel*expint(2.0*r_rel*r_rel/temp_b) ! minus sign inside ei for algo
+      temp_3 = -2.0*r_rel*r_rel*expint(r_rel*r_rel/temp_b) ! minus sign inside ei for algo
+      temp_4 = exp(-2.0*r_rel*r_rel/temp_b)
+      temp_5 = exp(r_rel*r_rel/temp_b) -1.0
+      temp_6 = temp_b*temp_4*temp_5*temp_5
+      p_ = - temp_a*(temp_2 - temp_3 + temp_6)/(2.0*temp_b*r_rel*r_rel)
+c     Compute the vorticity field
+      temp_a = exp(-r_rel*r_rel/temp_b)
+      om_ = 1.0*GVRTX*temp_a/(PI*temp_b)  !!!!!4.0
+      om_ = -0.1
+c     Compute the dutheta/dr field
+      temp_2 = -GVRTX/(2.0*PI*r_rel*r_rel) !!!
+      temp_4 = GVRTX/(2.0*PI*r_rel) !!!
+      temp_5 = 2.0*r_rel*temp_a/temp_b
+      du_ = temp_1*temp_2 + temp_4*temp_5
+
+c     Compute the pressure gradient
+      pg = cpfld(1,2)*uthet**2.0/r_rel
+      call PG3D(x_,y_,z_,xxp,yyp,zzp,pgx,pgy,pgz,pg)
+
+
+      return
+      end
 c-----------------------------------------------------------------------
 c     subroutine to compute orthogonal projection of a point on a line
       subroutine ORPJN (llx,lly,llz,xl,yl,zl,xx,yy,zz,xxp,yyp,zzp)

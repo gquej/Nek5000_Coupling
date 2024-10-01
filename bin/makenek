@@ -51,7 +51,7 @@ set -a
 ###############################################################################
 # DONT'T TOUCH WHAT FOLLOWS !!!
 ###############################################################################
-: ${NEK_SOURCE_ROOT:="$HOME/Nek5000"}
+: ${NEK_SOURCE_ROOT:="/Users/gquerinjean/PhD/Coupling/Nek5000_localBC/Nek5000_Coupling"}
 echo "using source path: $NEK_SOURCE_ROOT"
 VERMAKENEK="19.0.1"
 set +a -e
