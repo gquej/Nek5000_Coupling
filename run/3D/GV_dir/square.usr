@@ -90,41 +90,88 @@ c      implicit none
       real u_, v_, w_, p_, om_, du_
       integer WTSC !0 for Gaussian vortex, 1 for TGV
       integer BCLCGB ! if BC's expresse in local or global coord
-      real uunx, uuny, uunz, t1xx, t1yy, t1zz, t2xx, t2yy, t2zz
+      real usn(3), tsn(3), bsn(3)
+      real dudx, dudy, dudz, dvdx, dvdy, dvdz, dwdx, dwdy, dwdz
+      real omx, omy, omz, omt1, omt2
+      real dut1dn, dut2dn
       integer prcmpi ! precice mapping index
 
 
       WTSC = uparam(8)
       BCLCGB = uparam(9)
 
-      if(WTSC.eq.0) then                  !Gaussian vortex
-            call GVLFD(x, y, z, u_, v_, w_, p_, om_, du_,
-     &        pgx, pgy, pgz) ! compute the exact solution
-      else                          !Taylor-Green vortex
-            call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
-      endif
+c       if(WTSC.eq.0) then                  !Gaussian vortex
+c             call GVLFD(x, y, z, u_, v_, w_, p_, om_, du_,
+c      &        pgx, pgy, pgz) ! compute the exact solution
+c       else                          !Taylor-Green vortex
+c             call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
+c       endif
       prcmpi = mpgprc(ix,iy,iz,eg)
       u_ = prcrdt(3*prcmpi)
       v_ = prcrdt(3*prcmpi+1)
-      w_ = prcrdt(3*prcmpi+1)
-      if(BCLCGB.eq.0) then
-            ux = u_
-            uy = v_
-            uz = w_
-      else if (BCLCGB.eq.1) then
+      w_ = prcrdt(3*prcmpi+2)
+      dudx = prcrdx(3*prcmpi)
+      dudy = prcrdx(3*prcmpi+1)
+      dudz = prcrdx(3*prcmpi+2)
+      dvdx = prcrdy(3*prcmpi)
+      dvdy = prcrdy(3*prcmpi+1)
+      dvdz = prcrdy(3*prcmpi+2)
+      dwdx = prcrdz(3*prcmpi)
+      dwdy = prcrdz(3*prcmpi+1)
+      dwdz = prcrdz(3*prcmpi+2)
 
-      call FDNRML(ix,iy,iz,iside,eg,uunx,uuny,uunz,t1xx,t1yy
-     & ,t1zz,t2xx,t2yy,t2zz)
-       un = u_*uunx + v_*uuny + w_*uunz 
-       u1 = u_*t1xx + v_*t1yy + w_*t1zz
-       u2 = u_*t2xx + v_*t2yy + w_*t2zz
+      omx = dwdy - dvdz
+      omy = dudz - dwdx
+      omz = dvdx - dudy
+      ie = gllel(eg)
+      call getSnormal  (usn,ix,iy,iz,iside,ie)
+      call getangent   (tsn,ix,iy,iz,iside,ie)
+      call getbitangent(bsn,ix,iy,iz,iside,ie)
+
+      ux = u_
+      uy = v_
+      uz = w_
+
+      un = u_*usn(1) + v_*usn(2) + w_*usn(3)
+      dut1dn = usn(1)*(dudx*tsn(1)+ dvdx*tsn(2) + dwdx*tsn(3)) + usn(2)*
+     & (dudy*tsn(1)+ dvdy*tsn(2) + dwdy*tsn(3)) + usn(3)*
+     & (dudz*tsn(1)+ dvdz*tsn(2) + dwdz*tsn(3))
+
+      dut2dn = usn(1)*(dudx*bsn(1)+ dvdx*bsn(2) + dwdx*bsn(3)) + usn(2)*
+     & (dudy*bsn(1)+ dvdy*bsn(2) + dwdy*bsn(3)) + usn(3)*
+     & (dudz*bsn(1)+ dvdz*bsn(2) + dwdz*bsn(3))
+     
+      omt1 = omx*tsn(1) + omy*tsn(2) + omz*tsn(3)
+      omt2 = omx*bsn(1) + omy*bsn(2) + omz*bsn(3)
+       
+      tr1 = 2.0*cpfld(1,1)*(dut1dn - 0.5*omt2) 
+      tr2 = 2.0*cpfld(1,1)*(dut2dn + 0.5*omt1)
+
+
+      
+
+      ! print *, u_, v_, w_
+      ! u_ = 0.1
+      ! v_ = 0.
+      ! w_ = 0.0
+c      if(BCLCGB.eq.0) then
+c            ux = u_
+c            uy = v_
+c            uz = w_
+c      else if (BCLCGB.eq.1) then
+
+c      call FDNRML(ix,iy,iz,iside,eg,uunx,uuny,uunz,t1xx,t1yy
+c     & ,t1zz,t2xx,t2yy,t2zz)
+c       un = u_*uunx + v_*uuny + w_*uunz 
+c       u1 = u_*t1xx + v_*t1yy + w_*t1zz
+c       u2 = u_*t2xx + v_*t2yy + w_*t2zz
        
 
-      else if (BCLCGB.eq.2) then
-      tr1 = 2.0*cpfld(1,1)*(du_ - 0.5*w_) !! warning this does not work!!!!!!!!!
-      tr2 = 2.0*cpfld(1,1)*(du_ + 0.5*w_)     
-      
-      endif
+c      else if (BCLCGB.eq.2) then
+c      tr1 = 2.0*cpfld(1,1)*(du_ - 0.5*w_) !! warning this does not work!!!!!!!!!
+c      tr2 = 2.0*cpfld(1,1)*(du_ + 0.5*w_)     
+c      
+c      endif
 
       return
       end
@@ -149,9 +196,9 @@ c      implicit none
       else                          !Taylor-Green vortex
             call TVLFD(x,y,u_,v_, p_)
       endif
-      u_ = 0.0
+      u_ = 0.
       v_ = 0.0
-      w_ = 0.1
+      w_ = 2.
       ux = u_
       uy = v_
       uz = w_
@@ -161,7 +208,67 @@ c      implicit none
       return
       end
 
+C=======================================================================
+c-----------------------------------------------------------------------
+      subroutine getangent(st,ix,iy,iz,iside,e)
 
+c     calculate surface normal
+
+      include 'SIZE'
+      include 'GEOM'
+      include 'TOPOL'
+
+      real st(3)
+      integer e,f
+
+      f = eface1(iside)
+
+      if (1.le.f.and.f.le.2) then     ! "r face"
+         st(1) = t1x(iy,iz,iside,e)
+         st(2) = t1y(iy,iz,iside,e)
+         st(3) = t1z(iy,iz,iside,e)
+      elseif (3.le.f.and.f.le.4) then ! "s face"
+         st(1) = t1x(ix,iz,iside,e)
+         st(2) = t1y(ix,iz,iside,e)
+         st(3) = t1z(ix,iz,iside,e)
+      elseif (5.le.f.and.f.le.6) then ! "t face"
+         st(1) = t1x(ix,iy,iside,e)
+         st(2) = t1y(ix,iy,iside,e)
+         st(3) = t1z(ix,iy,iside,e)
+      endif
+
+      return
+      end
+
+      subroutine getbitangent(sb,ix,iy,iz,iside,e)
+
+c     calculate surface normal
+
+      include 'SIZE'
+      include 'GEOM'
+      include 'TOPOL'
+
+      real sb(3)
+      integer e,f
+
+      f = eface1(iside)
+
+      if (1.le.f.and.f.le.2) then     ! "r face"
+         sb(1) = t2x(iy,iz,iside,e)
+         sb(2) = t2y(iy,iz,iside,e)
+         sb(3) = t2z(iy,iz,iside,e)
+      elseif (3.le.f.and.f.le.4) then ! "s face"
+         sb(1) = t2x(ix,iz,iside,e)
+         sb(2) = t2y(ix,iz,iside,e)
+         sb(3) = t2z(ix,iz,iside,e)
+      elseif (5.le.f.and.f.le.6) then ! "t face"
+         sb(1) = t2x(ix,iy,iside,e)
+         sb(2) = t2y(ix,iy,iside,e)
+         sb(3) = t2z(ix,iy,iside,e)
+      endif
+
+      return
+      end
 c-----------------------------------------------------------------------
       subroutine userchk()
 
@@ -170,132 +277,73 @@ c      implicit none
       include 'SIZE'
       include 'TOTAL'
 
-      integer i,j,ie
-      real u_, v_, w_, p_, om_, du_
-      real dump1, dump2,Linfu, Linfv, Linfw, LinfP,L2u, L2v,L2w, L2P
-      real L2Mg, LinfMg
-      real L2gx, L2gy, L2gz, Linfgx,Linfgy,Linfgz
-      real L2gp, Linfgp
-      real GVRTX, SVRTX, UTGV, PTGV
-      real ADMU2, ADMUI, ADMP2,ADMPI, ADMPG2, ADMPGI ! adim coefficients for the errors
-      integer WTSC !0 for Gaussian vortex, 1 for TGV
-      real DBGP !global pressure offset 
-      real SDBF(1)
-      real RVBF(1)
-      real uunx, uuny, uunz
-      real pgx, pgy, pgz !analytical pressure gradient vector
-      real pgxs(lx1,ly1,lz1,lelv) !solver pressure gradient vector x
-      real pgys(lx1,ly1,lz1,lelv) !solver pressure gradient vector y
-      real pgzs(lx1,ly1,lz1,lelv) !solver pressure gradient vector z
+      common /nekmpi/ nekcomm
+      
+      parameter(lipts = 2)
+      save inth_hpts
+      integer nxf, nyf, nzf
+      real bb_t
+      integer n, npt_max
+      real tol
+      integer rcode(lipts), proc(lipts), elid (lipts)
+      real rst(lipts*3)
+      real pts(3, lipts)
+      real dist(lipts)
+      real fieldout(3,lipts)
+
+      nxf = 2 * lx1
+      nyf = 2 * ly1
+      nzf = 2 * lz1
+      bb_t = 0.01
+      n = lx1*ly1*lz1*lelt
+      npt_max = 128
+      tol = 5e-13
+
+      pts(1,1) = 0.5
+      pts(2,1) = 0.5
+      pts(3,1) = 0.5
+
+      pts(1,2) = 0.5
+      pts(2,2) = 0.5
+      pts(3,2) = 0.7
+
+      call fgslib_findpts_setup(inth_hpts, nekcomm, np, 3,
+     &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
+     &  n, n, npt_max, tol)
+       
+      call fgslib_findpts(inth_hpts, rcode, 1, 
+     &                    proc, 1,
+     &                    elid, 1,
+     &                    rst, 3,
+     &                    dist, 1,
+     &                    pts(1,1), 3,
+     &                    pts(2,1), 3,
+     &                    pts(3,1), 3, lipts)
+      call fgslib_findpts_eval(inth_hpts,fieldout(1,1), 3,
+     &                         rcode, 1, 
+     &                         proc, 1, 
+     &                         elid, 1, 
+     &                         res, 3, lipts, 
+     &                         vx)
+      call fgslib_findpts_eval(inth_hpts,fieldout(2,1), 3,
+     &                         rcode, 1, 
+     &                         proc, 1, 
+     &                         elid, 1, 
+     &                         res, 3, lipts, 
+     &                         vy)
+      call fgslib_findpts_eval(inth_hpts,fieldout(3,1), 3,
+     &                         rcode, 1, 
+     &                         proc, 1, 
+     &                         elid, 1, 
+     &                         res, 3, lipts, 
+     &                         vz)
+      print *, fieldout(1,1), fieldout(2,1), fieldout(3,1)
+      print *, fieldout(1,2), fieldout(2,2), fieldout(3,2)
 
 
-      WTSC = uparam(8)
-
-      if(WTSC.eq.0) then                  !Gaussian vortex
-            GVRTX = uparam(1) !vortex circulation
-            SVRTX = uparam(2) !vortex sigma
-            ADMU2 = 1.0/(GVRTX*sqrt(SVRTX))
-            ADMUI = SVRTX/GVRTX
-            ADMP2 = sqrt(SVRTX)/(cpfld(1,2)*GVRTX*GVRTX)
-            ADMPI = SVRTX*SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
-            ADMPG2 = SVRTX*sqrt(SVRTX)/(cpfld(1,2)*GVRTX*GVRTX)
-            ADMPGI = SVRTX*SVRTX*SVRTX/(cpfld(1,2)*GVRTX*GVRTX)
-      else                          !Taylor-Green vortex
-            UTGV = uparam(1) !Characteristic velocity of the TGV
-            PTGV = uparam(2) !Wavelength of the TGV
-            ADMU2 = 1.0/(UTGV*PTGV)
-            ADMUI = 1.0/UTGV
-            ADMP2 = 1.0/(cpfld(1,2)*UTGV*UTGV*PTGV)
-            ADMPI = 1.0/(cpfld(1,2)*UTGV*UTGV)
-      endif
 
 
 
-c     Compute the exact solution at each grid point, then the relative
-c     error in u, v and Umag
-      if(WTSC.eq.0) then
-            call GVLFD(xm1(1,1,1,1),ym1(1,1,1,1),zm1(1,1,1,1),
-     &       u_,v_, w_, p_, om_, du_, pgx, pgy, pgz)
-      else
-            call TVLFD(xm1(1,1,1,1),ym1(1,1,1,1),u_,v_, p_)
-      endif
-      DBGP = pr(1,1,1,1) -p_ !compute global pressure offset
-      SDBF(1) = DBGP
-      call bcast(SDBF,8) !broadcast the global pressure offset on rank 0 (8 bytes for real)
-      DBGP = SDBF(1)
-      call gradm1(pgxs,pgys,pgzs,pr) ! compute pressure gradient
-
-      do ie=1,nelv
-      do k = 1,lz1
-      do j = 1,ly1
-      do i = 1,lx1
-            if(WTSC.eq.0) then
-                  call GVLFD(xm1(i,j,k,ie),ym1(i,j,k,ie), 
-     &             zm1(i,j,k,ie),u_,v_,w_, p_, om_, du_, pgx, pgy, pgz) ! compute the exact solution
-            else
-                  call TVLFD(xm1(i,j,1,ie),ym1(i,j,1,ie),u_,v_, p_) ! compute the exact solution
-            endif
-            t(i,j,k,ie,2) = (vx(i,j,k,ie) - u_)
-            t(i,j,k,ie,3) = (vy(i,j,k,ie) - v_)
-            t(i,j,k,ie,4) = (vz(i,j,k,ie) - w_)
-            t(i,j,k,ie,5) = (pr(i,j,k,ie) - p_-DBGP)
-
-            t(i,j,k,ie,7) = (pgxs(i,j,k,ie) - pgx)
-            t(i,j,k,ie,8) = (pgys(i,j,k,ie) - pgy)
-            t(i,j,k,ie,9) = (pgzs(i,j,k,ie) - pgz)
-            t(i,j,k,ie,6) = 0.0
-      enddo
-      enddo
-      enddo
-      enddo
-
-
-c     Integrate the error over the domain on u, v and Umag (in L2 and Linf sense)
-      call normvc(dump1,dump2,L2u,Linfu,t(:,:,:,:,2),
-     &             t(:,:,:,:,6),t(:,:,:,:,6))
-      call normvc(dump1,dump2,L2v,Linfv,t(:,:,:,:,3),
-     &             t(:,:,:,:,6),t(:,:,:,:,6))
-      call normvc(dump1,dump2,L2w,Linfw,t(:,:,:,:,4),
-     &             t(:,:,:,:,6),t(:,:,:,:,6))
-      call normvc(dump1,dump2,L2P,LinfP,t(:,:,:,:,5),
-     &             t(:,:,:,:,6),t(:,:,:,:,6))
-      call normvc(dump1,dump2,L2gx,Linfgx,t(:,:,:,:,7),
-     &             t(:,:,:,:,6),t(:,:,:,:,6))
-      call normvc(dump1,dump2,L2gy,Linfgy,t(:,:,:,:,8),
-     &             t(:,:,:,:,6),t(:,:,:,:,6))
-      call normvc(dump1,dump2,L2gz,Linfgz,t(:,:,:,:,9),
-     &             t(:,:,:,:,6),t(:,:,:,:,6))  
-    
-
-c     Normalize the errors
-      L2u = L2u*L2u*VOLVM1
-      L2v = L2v*L2v*VOLVM1
-      L2w = L2w*L2w*VOLVM1
-      L2P = L2P*L2P*VOLVM1
-      L2gx = L2gx*L2gx*VOLVM1
-      L2gy = L2gy*L2gy*VOLVM1
-      L2gz = L2gz*L2gz*VOLVM1
-      L2Mg = ADMU2*sqrt(L2u + L2v + L2w) !L2 norm of the velocity magnitude
-      L2P  = ADMP2*sqrt(L2P) !L2 norm of the pressure
-      LinfMg = ADMUI*(Linfu + Linfv + Linfw) !Linf norm of the velocity magnitude
-      LinfP  = ADMPI*LinfP !Linf norm of the pressure
-      L2gp = ADMPG2*sqrt(L2gx + L2gy + L2gz) !L2 norm of the pressure gradient
-      Linfgp = ADMPGI*(Linfgx + Linfgy + Linfgz) !Linf norm of the pressure gradient
-
-
-c     Write the errors to a file
-      if (istep.eq.0 .and. nid.eq.0) then
-      open(789,file='errors.txt',status='unknown',action='write')
-      write (789, '(8(ES25.16))') time, L2Mg, L2P,
-     & LinfMg, LinfP, DBGP, L2gp, Linfgp
-      close(789)
-      end if
-      if (nid.eq.0 .and. istep.gt.0) then
-      open(789,file='errors.txt',action='write',position='append')
-      write (789, '(8(ES25.16))') time, L2Mg, L2P,
-     & LinfMg, LinfP, DBGP, L2gp, Linfgp
-      close(789)
-      end if
 
 
       return

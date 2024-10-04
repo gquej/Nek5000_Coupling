@@ -8,8 +8,17 @@ c     prcnve: number of vertices
 c     mpgprc: mapping between the outer boundary vertices and the unique vertices of the mesh boundary
       real prcvrt (0:200000) !77 
       integer prcvid (0:200000) !25
-      real prcwdt (0:200000)
+      real prcwdt (0:400000)
       real prcrdt (0:200000)
+      real prcrdx (0:200000)
+      real prcrdy (0:200000)
+      real prcrdz (0:200000)
+
+      real prcvr2 (0:400000) !77
+      integer prcvi2 (0:150000) !25
+      character omeshn*11
+      integer omshdi 
+      real prcbox (0:5)
       real prcdt
       integer prcdim
       integer prcnve
@@ -18,10 +27,17 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
       character config*100
       character meshnm*100
       character rdDtNm*100
+      character rdDtNa*100
+      character rdDtNb*100
+      character rdDtNc*100
       character wrDtNm*100
 
       common /precic/ prcvrt, mpgprc, prcnve, prcwdt, prcrdt
       common /precic/ prcdt, parnm, config, meshnm, rdDtNm, wrDtNm
+      common /precic/ rdDtNa, rdDtNb, rdDtNc
+      common /precic/ prcrdx, prcrdy, prcrdz
       common /precic/ prcdim
       common /precic/ prcvid
+
+      common /precic/ prcvr2, prcvi2, omeshn, prcbox, omshdi
     

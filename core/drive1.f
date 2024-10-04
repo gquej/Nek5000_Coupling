@@ -173,13 +173,24 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       parnm = 'Nek'
       config = '../../../../Coupling_dir/precice-config.xml'
       meshnm = 'Nek-Mesh'
+      omeshn = 'Murphy-Mesh'
       rdDtNm = 'Data1'
-      wrDtNm = 'Data2'
+      wrDtNm = 'Nek_u'
       prcdim = 3
-      call precicef_create(parnm,config,0,1)
+      prcbox(0) = 0
+      prcbox(1) = 2
+      prcbox(2) = 0
+      prcbox(3) = 2
+      prcbox(4) = 0
+      prcbox(5) = 2
+      call precicef_create(parnm,config,nid_global,np_global)
       call prc_omesh
       call precicef_set_vertices(meshnm,prcnve, prcvrt, prcvid)
+      call precicef_set_mesh_access_region(omeshn, prcbox)
       call precicef_initialize()
+      call precicef_get_mesh_vertex_size(omeshn, omshdi)
+      call precicef_get_mesh_vertex_ids_and_coordinates(omeshn,
+     & omshdi,prcvi2, prcvr2)
 
       return
       end
@@ -191,6 +202,7 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'CTIMER'
       INCLUDE 'PRECIC'
+      INCLUDE 'PARALLEL'
       integer i,j
 
       call nekgsync()
@@ -220,9 +232,28 @@ c-----------------------------------------------------------------------
 
       do kstep=1,nsteps,msteps
          prcdt = 0.001
+         rdDtNm = 'Data1'
+         rdDtNa = 'Data1_gx'
+         rdDtNb = 'Data1_gy'
+         rdDtNc = 'Data1_gz'
          call precicef_read_data(meshnm, rdDtNm, prcnve, 
      &    prcvid ,prcdt, prcrdt)
-         ! call precicef_write_data(mshnm, wrDtNm, 10, vertID , wrDt)
+         call precicef_read_data(meshnm, rdDtNa, prcnve, 
+     &    prcvid ,prcdt, prcrdx)
+         call precicef_read_data(meshnm, rdDtNb, prcnve, 
+     &    prcvid ,prcdt, prcrdy)
+         call precicef_read_data(meshnm, rdDtNc, prcnve, 
+     &    prcvid ,prcdt, prcrdz)
+!          do 120 i = 0,1000
+!             print *, prcrdx(i), prcrdy(i), prcrdz(i)
+!  120        continue
+   !       do 23 i = 0, prcnve
+   !          print *, prcvrt(i*3), prcvrt(i*3+1), prcvrt(i*3+2)
+   !          print *, prcvrt(i*3)-prcrdt(i*3), prcvrt(i*3+1)-
+   !   &       prcrdt(i*3+1), prcvrt(i*3+2)-prcrdt(i*3+2)
+   !          print *, "   "
+   ! 23        continue
+         
          call nek__multi_advance(kstep,msteps)
          if(kstep.ge.nsteps) lastep = 1
          call check_ioinfo  
@@ -234,6 +265,9 @@ c-----------------------------------------------------------------------
          call in_situ_check()
          if (mod(kstep,irstat).eq.0 .and. lastep.eq.0) call runstat 
          if (lastep .eq. 1) goto 1001
+         call interpolate_u(omshdi, prcvr2, prcwdt)   
+         call precicef_write_data(omeshn, wrDtNm, omshdi, prcvi2 ,
+     &     prcwdt)
          call precicef_advance(prcdt)
       enddo
  1001 lastep=1

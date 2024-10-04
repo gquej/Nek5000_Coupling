@@ -1,4 +1,4 @@
-      subroutine prc_omesh
+      subroutine prc_omesh()
         include 'SIZE'
         include 'TSTEP'
         include 'INPUT'
@@ -19,7 +19,7 @@
         DO IE = 1,NEL  !iterate on each face of each element
         DO IFACE=1,NFACES
            CB = CBC(IFACE,IE,1)
-           if (CB.eq.'v  ') then !if the face is a boundary
+           if (CB.eq.'v  '.or.CB.eq.'snl') then !if the face is a boundary
            call facind (kx1,kx2,ky1,ky2,kz1, kz2,lx1,ly1,lz1,iface)
            do 100 iz=kz1,kz2 !iterate on each vertex of the face
            do 100 iy=ky1,ky2
@@ -60,3 +60,69 @@
       
       return
       end
+c------------------------------------------------------------------------------------------------------------------------
+
+      subroutine interpolate_u(omshdi, prcvr2, prcwdt)
+
+        INCLUDE 'SIZE'
+        INCLUDE 'TOTAL'
+
+        common /nekmpi/ nekcomm
+
+        save inth_hpts
+        integer nxf, nyf, nzf
+        real bb_t
+        integer n, npt_max
+        real tol
+        integer omshdi
+        integer rcode(0:omshdi-1), proc(0:omshdi-1), elid (0:omshdi-1)
+        real rst(0:omshdi*3-1)
+        real dist(0:omshdi-1)
+        real prcvr2(0:omshdi*3-1)
+        real prcwdt(0:omshdi*3-1)
+
+
+        nxf = 2 * lx1
+        nyf = 2 * ly1
+        nzf = 2 * lz1
+        bb_t = 0.0
+        n = lx1*ly1*lz1*lelt
+        npt_max = 128
+        tol = 5e-13
+
+        call fgslib_findpts_setup(inth_hpts, nekcomm, np, 3,
+     &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
+     &  n, n, npt_max, tol)
+
+        call fgslib_findpts(inth_hpts, rcode, 1, 
+     &                    proc, 1,
+     &                    elid, 1,
+     &                    rst, 3,
+     &                    dist, 1,
+     &                    prcvr2(0), 3,
+     &                    prcvr2(1), 3,
+     &                    prcvr2(2), 3, omshdi)
+        
+        call fgslib_findpts_eval(inth_hpts,prcwdt(0), 3,
+     &                         rcode, 1, 
+     &                         proc, 1, 
+     &                         elid, 1, 
+     &                         rst, 3, omshdi, 
+     &                         vx)
+        call fgslib_findpts_eval(inth_hpts,prcwdt(1), 3,
+     &                         rcode, 1, 
+     &                         proc, 1, 
+     &                         elid, 1, 
+     &                         rst, 3, omshdi, 
+     &                         vy)
+        call fgslib_findpts_eval(inth_hpts,prcwdt(2), 3,
+     &                         rcode, 1, 
+     &                         proc, 1, 
+     &                         elid, 1, 
+     &                         rst, 3, omshdi, 
+     &                         vz)
+      return
+      end 
+
+
+       
