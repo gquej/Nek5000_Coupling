@@ -26,11 +26,23 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
       character parnm*100
       character config*100
       character meshnm*100
-      character rdDtNm*100
-      character rdDtNa*100
+      character rdDtNm*100 !data name for velocity field from murphy
+      character rdDtNa*100 ! data name for vort field from murphy
       character rdDtNb*100
       character rdDtNc*100
       character wrDtNm*100
+
+      real usol(lx1,lx1,6,lelt) ! u field on the boundary nodes of each element
+      !stored face by face with the numbering 4,2,1,3,5,6 for x-,x+,y-,y+,z-,z+
+      real vsol(lx1,lx1,6,lelt) ! v field on the boundary nodes of each element
+      real wsol(lx1,lx1,6,lelt) ! w field on the boundary nodes of each element
+      integer tmpl1(2*ldim,lelt), tmpl2(2*ldim,lelt)
+      integer tmpl3(2*ldim,lelt), tmpl4(2*ldim,lelt)
+      integer l_fbc(lelt), l_fnbc(lelt)
+      real x_corner(8),y_corner(8),z_corner(8)
+      common /pernw/ tmpl1,tmpl2,tmpl3,tmpl4,l_fbc,l_fnbc
+      common /pernw/ x_corner, y_corner, z_corner
+      common /pernw/ usol, vsol, wsol
 
       common /precic/ prcvrt, mpgprc, prcnve, prcwdt, prcrdt
       common /precic/ prcdt, parnm, config, meshnm, rdDtNm, wrDtNm

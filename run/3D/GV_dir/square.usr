@@ -85,8 +85,10 @@ c      implicit none
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
+      
+
       include 'PRECIC'
-      integer ix,iy,iz,iside,eg
+      integer ix,iy,iz,iside,eg,ie
       real u_, v_, w_, p_, om_, du_
       integer WTSC !0 for Gaussian vortex, 1 for TGV
       integer BCLCGB ! if BC's expresse in local or global coord
@@ -96,6 +98,7 @@ c      implicit none
       real dut1dn, dut2dn
       integer prcmpi ! precice mapping index
 
+      ie = gllel(eg)
 
       WTSC = uparam(8)
       BCLCGB = uparam(9)
@@ -106,7 +109,7 @@ c      &        pgx, pgy, pgz) ! compute the exact solution
 c       else                          !Taylor-Green vortex
 c             call TVLFD(x, y, u_, v_, p_) ! compute the exact solution
 c       endif
-      prcmpi = mpgprc(ix,iy,iz,eg)
+      prcmpi = mpgprc(ix,iy,iz,ie)
       u_ = prcrdt(3*prcmpi)
       v_ = prcrdt(3*prcmpi+1)
       w_ = prcrdt(3*prcmpi+2)
@@ -128,9 +131,9 @@ c       endif
       call getangent   (tsn,ix,iy,iz,iside,ie)
       call getbitangent(bsn,ix,iy,iz,iside,ie)
 
-      ux = u_
-      uy = v_
-      uz = w_
+      ! ux = u_
+      ! uy = v_
+      ! uz = w_
 
       un = u_*usn(1) + v_*usn(2) + w_*usn(3)
       dut1dn = usn(1)*(dudx*tsn(1)+ dvdx*tsn(2) + dwdx*tsn(3)) + usn(2)*
@@ -146,6 +149,34 @@ c       endif
        
       tr1 = 2.0*cpfld(1,1)*(dut1dn - 0.5*omt2) 
       tr2 = 2.0*cpfld(1,1)*(dut2dn + 0.5*omt1)
+
+      !new version with indirect mixed bc's
+
+      if(iside.eq.4) then
+            ux = usol(iz,iy,4,ie)
+            uy = vsol(iz,iy,4,ie)
+            uz = wsol(iz,iy,4,ie)
+      else if(iside.eq.2) then
+            ux = usol(iz,iy,2,ie)
+            uy = vsol(iz,iy,2,ie)
+            uz = wsol(iz,iy,2,ie)
+      else if(iside.eq.1) then
+            ux = usol(iz,ix,1,ie)
+            uy = vsol(iz,ix,1,ie)
+            uz = wsol(iz,ix,1,ie)
+      else if(iside.eq.3) then
+            ux = usol(iz,ix,3,ie)
+            uy = vsol(iz,ix,3,ie)
+            uz = wsol(iz,ix,3,ie)
+      else if(iside.eq.5) then
+            ux = usol(iy,ix,5,ie)
+            uy = vsol(iy,ix,5,ie)
+            uz = wsol(iy,ix,5,ie)
+      else if(iside.eq.6) then
+            ux = usol(iy,ix,6,ie)
+            uy = vsol(iy,ix,6,ie)
+            uz = wsol(iy,ix,6,ie)
+      endif
 
 
       

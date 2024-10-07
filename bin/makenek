@@ -26,7 +26,10 @@ FFLAGS="-mcmodel=small" # -I/usr/local/include -L/usr/local/lib -lprecice"
 CFLAGS="-mcmodel=small" # -I/usr/local/include -L/usr/local/lib -lprecice"
 
 # optional linking flags
-USR_LFLAGS+=" -I/soft/precice/include -L/soft/precice/lib -lprecice -Wl,-rpath,/soft/precice/lib"
+#USR_LFLAGS+=" -I/soft/precice/include -L/soft/precice/lib -lprecice -Wl,-rpath,/soft/precice/lib"  #with original precice install
+#USR_LFLAGS+=" -I/soft/petsc/include -L/soft/petsc/lib -lpetsc -Wl,-rpath,/soft/petsc/lib"
+
+USR_LFLAGS+=" -I/home/coupling/Coupling/precice_install/include -L/home/coupling/Coupling/precice_install/lib -lprecice -Wl,-rpath,/home/coupling/Coupling/precice_install/lib" #with modified precice install
 USR_LFLAGS+=" -I/soft/petsc/include -L/soft/petsc/lib -lpetsc -Wl,-rpath,/soft/petsc/lib"
 
 

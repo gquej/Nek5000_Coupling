@@ -174,7 +174,7 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       config = '../../../../Coupling_dir/precice-config.xml'
       meshnm = 'Nek-Mesh'
       omeshn = 'Murphy-Mesh'
-      rdDtNm = 'Data1'
+      rdDtNm = 'Murphy_u'
       wrDtNm = 'Nek_u'
       prcdim = 3
       prcbox(0) = 0
@@ -191,6 +191,9 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       call precicef_get_mesh_vertex_size(omeshn, omshdi)
       call precicef_get_mesh_vertex_ids_and_coordinates(omeshn,
      & omshdi,prcvi2, prcvr2)
+
+      call assign_corner
+      call find_boundaries
 
       return
       end
@@ -232,18 +235,20 @@ c-----------------------------------------------------------------------
 
       do kstep=1,nsteps,msteps
          prcdt = 0.001
-         rdDtNm = 'Data1'
-         rdDtNa = 'Data1_gx'
-         rdDtNb = 'Data1_gy'
-         rdDtNc = 'Data1_gz'
+         rdDtNm = 'Murphy_u'
+         rdDtNa = 'Murphy_w'
+         ! rdDtNb = 'Data1_gy'
+         ! rdDtNc = 'Data1_gz'
          call precicef_read_data(meshnm, rdDtNm, prcnve, 
      &    prcvid ,prcdt, prcrdt)
          call precicef_read_data(meshnm, rdDtNa, prcnve, 
      &    prcvid ,prcdt, prcrdx)
-         call precicef_read_data(meshnm, rdDtNb, prcnve, 
-     &    prcvid ,prcdt, prcrdy)
-         call precicef_read_data(meshnm, rdDtNc, prcnve, 
-     &    prcvid ,prcdt, prcrdz)
+         call compute_bc
+         
+   !       call precicef_read_data(meshnm, rdDtNb, prcnve, 
+   !   &    prcvid ,prcdt, prcrdy)
+   !       call precicef_read_data(meshnm, rdDtNc, prcnve, 
+   !   &    prcvid ,prcdt, prcrdz)
 !          do 120 i = 0,1000
 !             print *, prcrdx(i), prcrdy(i), prcrdz(i)
 !  120        continue
