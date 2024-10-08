@@ -337,39 +337,49 @@ c      implicit none
       pts(1,2) = 0.5
       pts(2,2) = 0.5
       pts(3,2) = 0.7
+      ! if ((time-0.001).lt.1e-5) then
 
-      call fgslib_findpts_setup(inth_hpts, nekcomm, np, 3,
-     &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
-     &  n, n, npt_max, tol)
+!       call fgslib_findpts_setup(inth_hpts, nekcomm, np, 3,
+!      &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
+!      &  n, n, npt_max, tol)
+      
        
-      call fgslib_findpts(inth_hpts, rcode, 1, 
-     &                    proc, 1,
-     &                    elid, 1,
-     &                    rst, 3,
-     &                    dist, 1,
-     &                    pts(1,1), 3,
-     &                    pts(2,1), 3,
-     &                    pts(3,1), 3, lipts)
-      call fgslib_findpts_eval(inth_hpts,fieldout(1,1), 3,
-     &                         rcode, 1, 
-     &                         proc, 1, 
-     &                         elid, 1, 
-     &                         res, 3, lipts, 
-     &                         vx)
-      call fgslib_findpts_eval(inth_hpts,fieldout(2,1), 3,
-     &                         rcode, 1, 
-     &                         proc, 1, 
-     &                         elid, 1, 
-     &                         res, 3, lipts, 
-     &                         vy)
-      call fgslib_findpts_eval(inth_hpts,fieldout(3,1), 3,
-     &                         rcode, 1, 
-     &                         proc, 1, 
-     &                         elid, 1, 
-     &                         res, 3, lipts, 
-     &                         vz)
-      print *, fieldout(1,1), fieldout(2,1), fieldout(3,1)
-      print *, fieldout(1,2), fieldout(2,2), fieldout(3,2)
+!       call fgslib_findpts(inth_hpts, rcode, 1, 
+!      &                    proc, 1,
+!      &                    elid, 1,
+!      &                    rst, 3,
+!      &                    dist, 1,
+!      &                    pts(1,1), 3,
+!      &                    pts(2,1), 3,
+!      &                    pts(3,1), 3, lipts)
+!       endif
+!       call fgslib_findpts_eval(inth_hpts,fieldout(1,1), 3,
+!      &                         rcode, 1, 
+!      &                         proc, 1, 
+!      &                         elid, 1, 
+!      &                         res, 3, lipts, 
+!      &                         vx)
+!       call fgslib_findpts_eval(inth_hpts,fieldout(2,1), 3,
+!      &                         rcode, 1, 
+!      &                         proc, 1, 
+!      &                         elid, 1, 
+!      &                         res, 3, lipts, 
+!      &                         vy)
+!       call fgslib_findpts_eval(inth_hpts,fieldout(3,1), 3,
+!      &                         rcode, 1, 
+!      &                         proc, 1, 
+!      &                         elid, 1, 
+!      &                         res, 3, lipts, 
+!      &                         vz)
+      ! do i = 1,8
+      !  do j = 1, 8
+      !   do k = 1,8
+      !       print  *,vx(i,j,k,1), vy(i,j,k,1),vz(i,j,k,1)
+      !   enddo 
+      ! enddo
+      ! enddo
+      ! print *,"e",fieldout(1,1), fieldout(2,1), fieldout(3,1)
+      ! print *,"h", fieldout(1,2), fieldout(2,2), fieldout(3,2)
 
 
 

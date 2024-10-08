@@ -40,6 +40,23 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
       integer tmpl3(2*ldim,lelt), tmpl4(2*ldim,lelt)
       integer l_fbc(lelt), l_fnbc(lelt)
       real x_corner(8),y_corner(8),z_corner(8)
+
+      !arrays for interpolation of u, v, w
+      integer handle_u, handle_v, handle_w
+      integer rcodeu(130000), rcodev(130000),rcodew(130000)
+      integer procu(130000), procv(130000),procw(130000)
+      integer elidu(130000), elidv(130000),elidw(130000)
+      real rstu(400000),rstvv(400000),rstw(400000)  !rstvv because rstv is already used...
+      real distu(400000), distv(400000), distw(400000) 
+
+      common /precic/ handle_u, handle_v, handle_w
+      common /precic/ rcodeu, rcodev, rcodew
+      common /precic/ proc, prov, procw
+      common /precic/ elidu, elidv, elidw
+      common /precic/ rstu, rstvv, rstw 
+      common /precic/ distu, distv, distw
+
+
       common /pernw/ tmpl1,tmpl2,tmpl3,tmpl4,l_fbc,l_fnbc
       common /pernw/ x_corner, y_corner, z_corner
       common /pernw/ usol, vsol, wsol

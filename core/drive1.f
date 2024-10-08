@@ -194,6 +194,7 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
 
       call assign_corner
       call find_boundaries
+      call setup_interp
 
       return
       end
@@ -270,10 +271,14 @@ c-----------------------------------------------------------------------
          call in_situ_check()
          if (mod(kstep,irstat).eq.0 .and. lastep.eq.0) call runstat 
          if (lastep .eq. 1) goto 1001
-         call interpolate_u(omshdi, prcvr2, prcwdt)   
+         print *, "ici 1"
+         call interpolate_u
+         print *, "ici2"   
          call precicef_write_data(omeshn, wrDtNm, omshdi, prcvi2 ,
      &     prcwdt)
+         print *, 'ici3'
          call precicef_advance(prcdt)
+         print *, 'ici4'
       enddo
  1001 lastep=1
 

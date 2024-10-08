@@ -60,9 +60,128 @@
       
       return
       end
+
+c---------------------------------------------------------------------------------------------      
+      subroutine setup_interp
+         include 'size'
+         include 'total'
+         include 'precic'
+
+        integer nxf, nyf, nzf
+        real bb_t
+        integer n, npt_max
+        real tol
+        real vmodif(0:omshdi*3-1)
+        real hvpm
+        integer i
+        common /nekmpi/ nekcomm
+
+        nxf = 2 * lx1
+        nyf = 2 * ly1
+        nzf = 2 * lz1
+        bb_t = 0.0
+        n = lx1*ly1*lz1*lelt
+        npt_max = 128
+        tol = 5e-13
+
+        call fgslib_findpts_setup(handle_u, nekcomm, np, 3,
+     &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
+     &  n, n, npt_max, tol)
+
+      !we want to interpolate the Nek velocity onto a staggered VPM grid. The coordinates for the 
+      !3 components of velocity are (with xi,yj,zk the Murphy vertex where the vorticity is stored):
+      !for u: (xi, yj + h/2, zk + h/2)
+      !for v: (xi+h/2, yj  , zk + h/2)
+      !for u: (xi+ h/2, yj + h/2, zk )
+      hvpm = 1./24.
+      !modify the vertex coordinates to interpolate the x-component: adding h/2 to y and z
+      do i = 0, omshdi-1
+         vmodif(3*i)   = prcvr2(3*i)
+         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm
+         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm
+      enddo
+
+        call fgslib_findpts(handle_u, rcodeu, 1, 
+     &                    procu, 1,
+     &                    elidu, 1,
+     &                    rstu, 3,
+     &                    distu, 1,
+     &                    vmodif(0), 3,
+     &                    vmodif(1), 3,
+     &                    vmodif(2), 3, omshdi)
+      call fgslib_findpts_setup(handle_v, nekcomm, np, 3,
+     &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
+     &  n, n, npt_max, tol)
+
+      do i = 0, omshdi-1
+         vmodif(3*i)   = prcvr2(3*i) + 0.5*hvpm
+         vmodif(3*i+1) = prcvr2(3*i+1) 
+         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm
+      enddo
+
+        call fgslib_findpts(handle_v, rcodev, 1, 
+     &                    procv, 1,
+     &                    elidv, 1,
+     &                    rstvv, 3,
+     &                    distv, 1,
+     &                    vmodif(0), 3,
+     &                    vmodif(1), 3,
+     &                    vmodif(2), 3, omshdi)
+
+      
+      call fgslib_findpts_setup(handle_w, nekcomm, np, 3,
+     &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
+     &  n, n, npt_max, tol)
+      do i = 0, omshdi-1
+         vmodif(3*i)   = prcvr2(3*i) + 0.5*hvpm
+         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm
+         vmodif(3*i+2) = prcvr2(3*i+2) 
+      enddo
+
+        call fgslib_findpts(handle_w, rcodew, 1, 
+     &                    procw, 1,
+     &                    elidw, 1,
+     &                    rstw, 3,
+     &                    distw, 1,
+     &                    vmodif(0), 3,
+     &                    vmodif(1), 3,
+     &                    vmodif(2), 3, omshdi)
+      return 
+      end
+
+c-----------------------------------------------------------------------------
+      subroutine interpolate_u
+
+         INCLUDE 'SIZE'
+         INCLUDE 'TOTAL'
+         include 'precic'
+ 
+         
+         call fgslib_findpts_eval(handle_u,prcwdt(0), 3,
+     &                         rcodeu, 1, 
+     &                         procu, 1, 
+     &                         elidu, 1, 
+     &                         rstu, 3, omshdi, 
+     &                         vx)
+ 
+         call fgslib_findpts_eval(handle_v,prcwdt(1), 3,
+     &                         rcodev, 1, 
+     &                         procv, 1, 
+     &                         elidv, 1, 
+     &                         rstvv, 3, omshdi, 
+     &                         vy)
+
+         call fgslib_findpts_eval(handle_w,prcwdt(2), 3,
+     &                         rcodew, 1, 
+     &                         procw, 1, 
+     &                         elidw, 1, 
+     &                         rstw, 3, omshdi, 
+     &                         vz)
+       return
+       end 
 c------------------------------------------------------------------------------------------------------------------------
 
-      subroutine interpolate_u(omshdi, prcvr2, prcwdt)
+      subroutine interpolate_u_old(omshdi, vert, wdt)
 
         INCLUDE 'SIZE'
         INCLUDE 'TOTAL'
@@ -78,12 +197,11 @@ c-------------------------------------------------------------------------------
         integer rcode(0:omshdi-1),proc(0:omshdi-1),elid (0:omshdi-1)
         real rst(0:omshdi*3-1)
         real dist(0:omshdi-1)
-        real prcvr2(0:omshdi*3-1)
-        real prcwdt(0:omshdi*3-1)
+        real vert(0:omshdi*3-1)
+        real wdt(0:omshdi*3-1)
         real vmodif(0:omshdi*3-1)
         real hvpm
         integer i
-
 
         nxf = 2 * lx1
         nyf = 2 * ly1
@@ -92,10 +210,12 @@ c-------------------------------------------------------------------------------
         n = lx1*ly1*lz1*lelt
         npt_max = 128
         tol = 5e-13
+        print *, "here here"
+        print *, inth_hpts
 
-        call fgslib_findpts_setup(inth_hpts, nekcomm, np, 3,
-     &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
-     &  n, n, npt_max, tol)
+   !      call fgslib_findpts_setup(inth_hpts, nekcomm, np, 3,
+   !   &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
+   !   &  n, n, npt_max, tol)
 
 
 
@@ -109,70 +229,70 @@ c-------------------------------------------------------------------------------
       !modify the vertex coordinates to interpolate the x-component: adding h/2 to y and z
       do i = 0, omshdi-1
 
-         vmodif(3*i)   = prcvr2(3*i)
-         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm
-         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm
+         vmodif(3*i)   = vert(3*i)
+         vmodif(3*i+1) = vert(3*i+1) + 0.5*hvpm
+         vmodif(3*i+2) = vert(3*i+2) + 0.5*hvpm
       enddo
 
-        call fgslib_findpts(inth_hpts, rcode, 1, 
-     &                    proc, 1,
-     &                    elid, 1,
-     &                    rst, 3,
-     &                    dist, 1,
-     &                    vmodif(0), 3,
-     &                    vmodif(1), 3,
-     &                    vmodif(2), 3, omshdi)
+   !      call fgslib_findpts(inth_hpts, rcode, 1, 
+   !   &                    proc, 1,
+   !   &                    elid, 1,
+   !   &                    rst, 3,
+   !   &                    dist, 1,
+   !   &                    vmodif(0), 3,
+   !   &                    vmodif(1), 3,
+   !   &                    vmodif(2), 3, omshdi)
         
-        call fgslib_findpts_eval(inth_hpts,prcwdt(0), 3,
-     &                         rcode, 1, 
-     &                         proc, 1, 
-     &                         elid, 1, 
-     &                         rst, 3, omshdi, 
-     &                         vx)
+   !      call fgslib_findpts_eval(inth_hpts,wdt(0), 3,
+   !   &                         rcode, 1, 
+   !   &                         proc, 1, 
+   !   &                         elid, 1, 
+   !   &                         rst, 3, omshdi, 
+   !   &                         vx)
        !modify the vertex coordinates to interpolate the y-component: adding h/2 to x and z
       do i = 0, omshdi-1
-         vmodif(3*i)   = prcvr2(3*i) + 0.5*hvpm
-         vmodif(3*i+1) = prcvr2(3*i+1) 
-         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm
+         vmodif(3*i)   = vert(3*i) + 0.5*hvpm
+         vmodif(3*i+1) = vert(3*i+1) 
+         vmodif(3*i+2) = vert(3*i+2) + 0.5*hvpm
       enddo
 
-        call fgslib_findpts(inth_hpts, rcode, 1, 
-     &                    proc, 1,
-     &                    elid, 1,
-     &                    rst, 3,
-     &                    dist, 1,
-     &                    vmodif(0), 3,
-     &                    vmodif(1), 3,
-     &                    vmodif(2), 3, omshdi)
+   !      call fgslib_findpts(inth_hpts, rcode, 1, 
+   !   &                    proc, 1,
+   !   &                    elid, 1,
+   !   &                    rst, 3,
+   !   &                    dist, 1,
+   !   &                    vmodif(0), 3,
+   !   &                    vmodif(1), 3,
+   !   &                    vmodif(2), 3, omshdi)
 
-        call fgslib_findpts_eval(inth_hpts,prcwdt(1), 3,
-     &                         rcode, 1, 
-     &                         proc, 1, 
-     &                         elid, 1, 
-     &                         rst, 3, omshdi, 
-     &                         vy)
+   !      call fgslib_findpts_eval(inth_hpts,wdt(1), 3,
+   !   &                         rcode, 1, 
+   !   &                         proc, 1, 
+   !   &                         elid, 1, 
+   !   &                         rst, 3, omshdi, 
+   !   &                         vy)
 
        !modify the vertex coordinates to interpolate the z-component: adding h/2 to x and y
       do i = 0, omshdi-1
-         vmodif(3*i)   = prcvr2(3*i) + 0.5*hvpm
-         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm
-         vmodif(3*i+2) = prcvr2(3*i+2) 
+         vmodif(3*i)   = vert(3*i) + 0.5*hvpm
+         vmodif(3*i+1) = vert(3*i+1) + 0.5*hvpm
+         vmodif(3*i+2) = vert(3*i+2) 
       enddo
 
-        call fgslib_findpts(inth_hpts, rcode, 1, 
-     &                    proc, 1,
-     &                    elid, 1,
-     &                    rst, 3,
-     &                    dist, 1,
-     &                    vmodif(0), 3,
-     &                    vmodif(1), 3,
-     &                    vmodif(2), 3, omshdi)
-        call fgslib_findpts_eval(inth_hpts,prcwdt(2), 3,
-     &                         rcode, 1, 
-     &                         proc, 1, 
-     &                         elid, 1, 
-     &                         rst, 3, omshdi, 
-     &                         vz)
+   !      call fgslib_findpts(inth_hpts, rcode, 1, 
+   !   &                    proc, 1,
+   !   &                    elid, 1,
+   !   &                    rst, 3,
+   !   &                    dist, 1,
+   !   &                    vmodif(0), 3,
+   !   &                    vmodif(1), 3,
+   !   &                    vmodif(2), 3, omshdi)
+   !      call fgslib_findpts_eval(inth_hpts,wdt(2), 3,
+   !   &                         rcode, 1, 
+   !   &                         proc, 1, 
+   !   &                         elid, 1, 
+   !   &                         rst, 3, omshdi, 
+   !   &                         vz)
       return
       end 
 
