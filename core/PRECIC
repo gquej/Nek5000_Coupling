@@ -49,6 +49,11 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
       real rstu(400000),rstvv(400000),rstw(400000)  !rstvv because rstv is already used...
       real distu(400000), distv(400000), distw(400000) 
 
+      !try to stabilize the coupling: store the values of interior point at previous time step
+      !since we treat the thing by element, and by face, thats basically a lot of additional data...
+      
+
+
       common /precic/ handle_u, handle_v, handle_w
       common /precic/ rcodeu, rcodev, rcodew
       common /precic/ proc, prov, procw

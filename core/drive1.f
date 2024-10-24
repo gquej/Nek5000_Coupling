@@ -177,24 +177,29 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       rdDtNm = 'Murphy_u'
       wrDtNm = 'Nek_u'
       prcdim = 3
-      prcbox(0) = 0
-      prcbox(1) = 2
-      prcbox(2) = 0
-      prcbox(3) = 2
-      prcbox(4) = 0
-      prcbox(5) = 2
+      prcbox(0) = 0.6
+      prcbox(1) = 2.6
+      prcbox(2) = 1.
+      prcbox(3) = 3.
+      prcbox(4) = 0.5
+      prcbox(5) = 1.4
       call precicef_create(parnm,config,nid_global,np_global)
       call prc_omesh
+      print *, "number of vert", prcnve
       call precicef_set_vertices(meshnm,prcnve, prcvrt, prcvid)
       call precicef_set_mesh_access_region(omeshn, prcbox)
       call precicef_initialize()
+      
       call precicef_get_mesh_vertex_size(omeshn, omshdi)
       call precicef_get_mesh_vertex_ids_and_coordinates(omeshn,
      & omshdi,prcvi2, prcvr2)
+      
 
       call assign_corner
       call find_boundaries
-      call setup_interp
+      print *, 'ok here'
+      call setup_interp(nekcomm)
+      print *, 'ok here2'
 
       return
       end
@@ -235,16 +240,17 @@ c-----------------------------------------------------------------------
       irstat = int(param(120))
 
       do kstep=1,nsteps,msteps
-         prcdt = 0.001
+         prcdt = 0.1
          rdDtNm = 'Murphy_u'
          rdDtNa = 'Murphy_w'
          ! rdDtNb = 'Data1_gy'
          ! rdDtNc = 'Data1_gz'
+            
          call precicef_read_data(meshnm, rdDtNm, prcnve, 
      &    prcvid ,prcdt, prcrdt)
          call precicef_read_data(meshnm, rdDtNa, prcnve, 
      &    prcvid ,prcdt, prcrdx)
-         call compute_bc
+         call compute_bc(kstep)
          
    !       call precicef_read_data(meshnm, rdDtNb, prcnve, 
    !   &    prcvid ,prcdt, prcrdy)
