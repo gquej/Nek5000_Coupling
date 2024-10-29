@@ -9,10 +9,11 @@ ifeq ($(UNAME),Darwin)
   VERSION1 := $(shell sw_vers -productVersion)
   ifeq "10.8" "$(word 1, $(sort 10.8 $(VERSION1)))"
      CFLAGS += -I/opt/X11/include
+     CFLAGS +=-Wno-implicit-function-declaration
      X      = /opt/X11/lib
   else
-     CFLAGS += -I/usr/X11/include
-     X      = /usr/X11/lib
+     CFLAGS += -I/opt/X11/include
+     X      = /opt/X11/lib
   endif
 endif
 endif
