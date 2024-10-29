@@ -57,7 +57,7 @@
            endif
         ENDDO
         ENDDO
-      
+        print *, 'there are', 3*prcnve, 'entries'      
       return
       end
 
@@ -96,20 +96,25 @@ c-------------------------------------------------------------------------------
       hvpm = 1./12.
       !modify the vertex coordinates to interpolate the x-component: adding h/2 to y and z
       do i = 0, omshdi-1
-         vmodif(3*i)   = prcvr2(3*i)-1e-7
-         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm
-         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm
+         vmodif(3*i)   = prcvr2(3*i) -1.e-7
+         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm-1.e-7
+         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm-1.e-7
       enddo
 
-        call fgslib_findpts(handle_u, rcodeu, 1, 
-     &                    procu, 1,
-     &                    elidu, 1,
-     &                    rstu, 3,
-     &                    distu, 1,
+        call fgslib_findpts(handle_u, rcodeu(0), 1, 
+     &                    procu(0), 1,
+     &                    elidu(0), 1,
+     &                    rstu(0), 3,
+     &                    distu(0), 1,
      &                    vmodif(0), 3,
      &                    vmodif(1), 3,
      &                    vmodif(2), 3, omshdi)
-      print *, "iebushbi here"
+   !     do i = 0, omshdi-1
+   !       if(nid.eq.0) then
+   !       print *,nid, vmodif(3*i),vmodif(3*i+1),vmodif(3*i+2),rcodeu(i)
+   !   &    ,procu(i)
+   !       endif
+   !     enddo
    !    do i = 0, omshdi-1
    !       ! if(rcodeu(i).eq.2.and.(abs(vmodif(3*i)-1.125).lt.1.e-8)) then
    !       if(rcodeu(i).eq.2) then
@@ -123,16 +128,16 @@ c-------------------------------------------------------------------------------
      &  n, n, npt_max, tol)
 
       do i = 0, omshdi-1
-         vmodif(3*i)   = prcvr2(3*i) + 0.5*hvpm
-         vmodif(3*i+1) = prcvr2(3*i+1) 
-         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm
+         vmodif(3*i)   = prcvr2(3*i) + 0.5*hvpm-1.e-7
+         vmodif(3*i+1) = prcvr2(3*i+1) -1.e-7
+         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm-1.e-7
       enddo
 
-        call fgslib_findpts(handle_v, rcodev, 1, 
-     &                    procv, 1,
-     &                    elidv, 1,
-     &                    rstvv, 3,
-     &                    distv, 1,
+        call fgslib_findpts(handle_v, rcodev(0), 1, 
+     &                    procv(0), 1,
+     &                    elidv(0), 1,
+     &                    rstvv(0), 3,
+     &                    distv(0), 1,
      &                    vmodif(0), 3,
      &                    vmodif(1), 3,
      &                    vmodif(2), 3, omshdi)
@@ -142,16 +147,16 @@ c-------------------------------------------------------------------------------
      &  xm1, ym1, zm1, lx1, ly1, lz1, nelt, nxf, nyf, nzf, bb_t,
      &  n, n, npt_max, tol)
       do i = 0, omshdi-1
-         vmodif(3*i)   = prcvr2(3*i) + 0.5*hvpm
-         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm
-         vmodif(3*i+2) = prcvr2(3*i+2) 
+         vmodif(3*i)   = prcvr2(3*i) + 0.5*hvpm-1.e-7
+         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm-1.e-7
+         vmodif(3*i+2) = prcvr2(3*i+2) -1.e-7
       enddo
 
-        call fgslib_findpts(handle_w, rcodew, 1, 
-     &                    procw, 1,
-     &                    elidw, 1,
-     &                    rstw, 3,
-     &                    distw, 1,
+        call fgslib_findpts(handle_w, rcodew(0), 1, 
+     &                    procw(0), 1,
+     &                    elidw(0), 1,
+     &                    rstw(0), 3,
+     &                    distw(0), 1,
      &                    vmodif(0), 3,
      &                    vmodif(1), 3,
      &                    vmodif(2), 3, omshdi)
@@ -167,25 +172,57 @@ c-----------------------------------------------------------------------------
  
          
          call fgslib_findpts_eval(handle_u,prcwdt(0), 3,
-     &                         rcodeu, 1, 
-     &                         procu, 1, 
-     &                         elidu, 1, 
-     &                         rstu, 3, omshdi, 
+     &                         rcodeu(0), 1, 
+     &                         procu(0), 1, 
+     &                         elidu(0), 1, 
+     &                         rstu(0), 3, omshdi, 
      &                         vx)
+
  
          call fgslib_findpts_eval(handle_v,prcwdt(1), 3,
-     &                         rcodev, 1, 
-     &                         procv, 1, 
-     &                         elidv, 1, 
-     &                         rstvv, 3, omshdi, 
+     &                         rcodev(0), 1, 
+     &                         procv(0), 1, 
+     &                         elidv(0), 1, 
+     &                         rstvv(0), 3, omshdi, 
      &                         vy)
 
+
          call fgslib_findpts_eval(handle_w,prcwdt(2), 3,
-     &                         rcodew, 1, 
-     &                         procw, 1, 
-     &                         elidw, 1, 
-     &                         rstw, 3, omshdi, 
+     &                         rcodew(0), 1, 
+     &                         procw(0), 1, 
+     &                         elidw(0), 1, 
+     &                         rstw(0), 3, omshdi, 
      &                         vz)
+
+   !     if(nid.eq.0) then
+   !       do i = 0, omshdi-1
+   !       print *, 'zzz',prcwdt(3*i), nid, procu(i),rcodeu(i)
+   !       print *, "pp", prcvr2(3*i)-1e-7,prcvr2(3*i+1) +1./12.-1e-7,
+   !   &   prcvr2(3*i+2) +1./12.-1e-7    
+   !       enddo
+   !    endif
+         do i = 0, omshdi-1 
+            
+            if(procu(i).ne.nid) then 
+               prcwdt(3*i) = 0.
+
+               endif
+
+            if(procv(i).ne.nid) then 
+            prcwdt(3*i+1) = 0.
+            endif 
+            if(procw(i).ne.nid) then 
+            prcwdt(3*i+2) = 0.
+            endif
+         enddo 
+
+
+      !    if(nid.eq.0) then
+      !    do i = 0, omshdi-1
+      !    print *, 'areuh',prcwdt(3*i), nid, procu(i)
+      !    enddo
+      ! endif
+
        return
        end 
 c------------------------------------------------------------------------------------------------------------------------
@@ -234,7 +271,7 @@ c-------------------------------------------------------------------------------
       !for v: (xi+h/2, yj  , zk + h/2)
       !for u: (xi+ h/2, yj + h/2, zk )
 
-      hvpm = 1./12.
+      hvpm = 1./4.
       !modify the vertex coordinates to interpolate the x-component: adding h/2 to y and z
       do i = 0, omshdi-1
 

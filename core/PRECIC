@@ -43,11 +43,11 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
 
       !arrays for interpolation of u, v, w
       integer handle_u, handle_v, handle_w
-      integer rcodeu(130000), rcodev(130000),rcodew(130000)
-      integer procu(130000), procv(130000),procw(130000)
-      integer elidu(130000), elidv(130000),elidw(130000)
-      real rstu(400000),rstvv(400000),rstw(400000)  !rstvv because rstv is already used...
-      real distu(400000), distv(400000), distw(400000) 
+      integer rcodeu(0:130000), rcodev(0:130000),rcodew(0:130000)
+      integer procu(0:130000), procv(0:130000),procw(0:130000)
+      integer elidu(0:130000), elidv(0:130000),elidw(0:130000)
+      real rstu(0:400000),rstvv(0:400000),rstw(0:400000)  !rstvv because rstv is already used...
+      real distu(0:400000), distv(0:400000), distw(0:400000) 
 
       !try to stabilize the coupling: store the values of interior point at previous time step
       !since we treat the thing by element, and by face, thats basically a lot of additional data...
@@ -56,7 +56,7 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
 
       common /precic/ handle_u, handle_v, handle_w
       common /precic/ rcodeu, rcodev, rcodew
-      common /precic/ proc, prov, procw
+      common /precic/ procu, procv, procw
       common /precic/ elidu, elidv, elidw
       common /precic/ rstu, rstvv, rstw 
       common /precic/ distu, distv, distw

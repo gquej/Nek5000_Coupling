@@ -43,6 +43,9 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       common /ivrtx/ vertex((2 ** ldim) * lelt)
       integer*8 glo_num, ngv
       integer*8 vertex
+      integer nel
+      real bbbx1, bbbx2, bbby1, bbby2, bbbz1, bbbz2
+      real bbbox_tol
 
       ! set word size for REAL
       wdsize = sizeof(rtest)
@@ -177,15 +180,65 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       rdDtNm = 'Murphy_u'
       wrDtNm = 'Nek_u'
       prcdim = 3
-      prcbox(0) = 0.6
-      prcbox(1) = 2.6
-      prcbox(2) = 1.
-      prcbox(3) = 3.
-      prcbox(4) = 0.5
-      prcbox(5) = 1.4
+      !we'd like to find region spanned by this rank, let's do it in a dirty way:
+      bbbx1 = 1.e30
+      bbbx2 = -1.e30
+      bbby1 = 1.e30
+      bbby2 = -1.e30
+      bbbz1 = 1.e30
+      bbbz2 = -1.e30
+      bbbox_tol = 0.05
+      nel = nelfld(1)
+      do ie = 1,nel 
+         do k = 1, lx1 
+         do j = 1, lx1 
+         do i = 1, lx1 
+         if(xm1(i,j,k,ie).lt.bbbx1) then 
+            bbbx1 = xm1(i,j,k,ie)
+         endif 
+         if(xm1(i,j,k,ie).gt.bbbx2) then 
+            bbbx2 = xm1(i,j,k,ie)
+         endif
+
+         if(ym1(i,j,k,ie).lt.bbby1) then 
+            bbby1 = ym1(i,j,k,ie)
+         endif 
+         if(ym1(i,j,k,ie).gt.bbby2) then 
+            bbby2 = ym1(i,j,k,ie)
+         endif
+
+         if(zm1(i,j,k,ie).lt.bbbz1) then 
+            bbbz1 = zm1(i,j,k,ie)
+         endif 
+         if(zm1(i,j,k,ie).gt.bbbz2) then 
+            bbbz2 = zm1(i,j,k,ie)
+         endif
+      enddo
+      enddo
+      enddo
+
+
+      enddo
+      print *, bbbx1, bbbx2
+      print *, bbby1, bbby2
+      print *, bbbz1, bbbz2
+
+      prcbox(0) = bbbx1 -bbbox_tol
+      prcbox(1) = bbbx2 +bbbox_tol
+      prcbox(2) = bbby1 -bbbox_tol
+      prcbox(3) = bbby2 +bbbox_tol
+      prcbox(4) = bbbz1 -bbbox_tol
+      prcbox(5) = bbbz2 +bbbox_tol
+
+      ! prcbox(0) = 0.6
+      ! prcbox(1) = 2.6
+      ! prcbox(2) = 1.
+      ! prcbox(3) = 3.
+      ! prcbox(4) = 0.5
+      ! prcbox(5) = 1.4
       call precicef_create(parnm,config,nid_global,np_global)
       call prc_omesh
-      print *, "number of vert", prcnve
+      print *, "number of vert", prcnve 
       call precicef_set_vertices(meshnm,prcnve, prcvrt, prcvid)
       call precicef_set_mesh_access_region(omeshn, prcbox)
       call precicef_initialize()
@@ -240,7 +293,7 @@ c-----------------------------------------------------------------------
       irstat = int(param(120))
 
       do kstep=1,nsteps,msteps
-         prcdt = 0.1
+         prcdt = 0.05
          rdDtNm = 'Murphy_u'
          rdDtNa = 'Murphy_w'
          ! rdDtNb = 'Data1_gy'
@@ -280,6 +333,7 @@ c-----------------------------------------------------------------------
          print *, "ici 1"
          call interpolate_u
          print *, "ici2"   
+         print *, omshdi, 'omshdi'
          call precicef_write_data(omeshn, wrDtNm, omshdi, prcvi2 ,
      &     prcwdt)
          print *, 'ici3'

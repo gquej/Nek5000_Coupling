@@ -1,0 +1,163 @@
+-3                     spatial dimension (will create box.re2)
+1                      number of fields
+#
+#    comments: periodic laminar flow
+#
+#========================================================
+#
+Box1                                       fdlf
+-6 -6 -2                                    Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+v  ,   ,v  ,   ,v  ,                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box2                                       fdlf
+-6 -6 -2                                    Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+0.875 1.125 1.0                             z0 z1 ratio
+v  ,   ,v  ,   ,   ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box3                                       fdlf
+-6 -6 -2                                   Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+v  ,   ,v  ,   ,   ,v                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box4                                      fdlf
+-4 -6 -2                                    Nelx  Nely
+1.35 1.85 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+   ,   ,v  ,   ,v  ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box5                                     fdlf
+-4 -6 -2                                    Nelx  Nely
+1.35 1.85 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+0.875 1.125 1.0                             z0 z1 ratio
+   ,   ,v  ,W  ,   ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box6                                      fdlf
+-4 -6 -2                                    Nelx  Nely
+1.35 1.85 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+   ,   ,v  ,   ,   ,v                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box7                                      fdlf
+-6 -6 -2                                   Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+   ,v  ,v  ,   ,v  ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box8                                      fdlf
+-6 -6 -2                                    Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+0.875 1.125 1.0                             z0 z1 ratio
+   ,v  ,v  ,   ,   ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box9                                      fdlf
+-6 -6 -2                                    Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+1.0 1.75 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+   ,v  ,v  ,   ,   ,v                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box10                                       fdlf
+-6 -4 -2                                    Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+1.75 2.25 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+v  ,   ,   ,   ,v  ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box11                                       fdlf
+-6 -4 -2                                    Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+1.75 2.25 1.0                             y0 y1 ratio
+0.875 1.125 1.0                             z0 z1 ratio
+v  ,W  ,   ,   ,   ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box12                                       fdlf
+-6 -4 -2                                    Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+1.75 2.25 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+v  ,   ,   ,   ,   ,v                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box13                                      fdlf
+-6 -4 -2                                    Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+1.75 2.25 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+   ,v  ,   ,   ,v  ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box14                                      fdlf
+-6 -4 -2                                    Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+1.75 2.25 1.0                             y0 y1 ratio
+0.875 1.125 1.0                             z0 z1 ratio
+W  ,v  ,   ,   ,   ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box15                                      fdlf
+-6 -4 -2                                    Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+1.75 2.25 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+   ,v  ,   ,   ,   ,v                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box16                                       fdlf
+-6 -6 -2                                    Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+v  ,   ,   ,v  ,v  ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box17                                       fdlf
+-6 -6 -2                                   Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+0.875 1.125 1.0                             z0 z1 ratio
+v  ,   ,   ,v  ,   ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box18                                       fdlf
+-6 -6 -2                                    Nelx  Nely
+0.6 1.35 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+v  ,   ,   ,v  ,   ,v                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box19                                      fdlf
+-4 -6 -2                                  Nelx  Nely
+1.35 1.85 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+   ,   ,   ,v  ,v  ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box20                                      fdlf
+-4 -6 -2                                   Nelx  Nely
+1.35 1.85 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+0.875 1.125 1.0                             z0 z1 ratio
+   ,   ,W  ,v  ,   ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box21                                      fdlf
+-4 -6 -2                                  Nelx  Nely
+1.35 1.85 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+   ,   ,   ,v  ,   ,v                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box22                                      fdlf
+-6 -6 -2                                    Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+   ,v  ,   ,v  ,v  ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box23                                      fdlf
+-6 -6 -2                                    Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+0.875 1.125 1.0                             z0 z1 ratio
+   ,v  ,   ,v  ,   ,                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box24                                      fdlf
+-6 -6 -2                                    Nelx  Nely
+1.85 2.6 1.0                               x0 x1 ratio
+2.25 3.0 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+   ,v  ,   ,v  ,   ,v                                Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box25                                      fdlf
+-4 -4 -2                                    Nelx  Nely
+1.35 1.85 1.0                               x0 x1 ratio
+1.75 2.25 1.0                             y0 y1 ratio
+0.625 0.875 1.0                             z0 z1 ratio
+   ,   ,   ,   ,v  ,W                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
+Box26                                      fdlf
+-4 -4 -2                                    Nelx  Nely
+1.35 1.85 1.0                               x0 x1 ratio
+1.75 2.25 1.0                             y0 y1 ratio
+1.125 1.375 1.0                             z0 z1 ratio
+   ,   ,   ,   ,W  ,v                                 Velocity BC's:  (cbx0, cbx1, cby0, cby1)
