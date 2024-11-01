@@ -78,7 +78,7 @@ c-------------------------------------------------------------------------------
         nxf = 2 * lx1
         nyf = 2 * ly1
         nzf = 2 * lz1
-        bb_t = 0.01
+        bb_t = 1e-8
         n = lx1*ly1*lz1*lelt
         npt_max = 128
         tol = 5e-13
@@ -93,12 +93,12 @@ c-------------------------------------------------------------------------------
       !for u: (xi, yj + h/2, zk + h/2)
       !for v: (xi+h/2, yj  , zk + h/2)
       !for u: (xi+ h/2, yj + h/2, zk )
-      hvpm = 1./12.
+      hvpm = 1./64.
       !modify the vertex coordinates to interpolate the x-component: adding h/2 to y and z
       do i = 0, omshdi-1
          vmodif(3*i)   = prcvr2(3*i) -1.e-7
-         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm-1.e-7
-         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm-1.e-7
+         vmodif(3*i+1) = prcvr2(3*i+1) + 0.5*hvpm -1e-7
+         vmodif(3*i+2) = prcvr2(3*i+2) + 0.5*hvpm - 1e-7
       enddo
 
         call fgslib_findpts(handle_u, rcodeu(0), 1, 
@@ -109,6 +109,18 @@ c-------------------------------------------------------------------------------
      &                    vmodif(0), 3,
      &                    vmodif(1), 3,
      &                    vmodif(2), 3, omshdi)
+
+        do i = 0, omshdi -1
+         if(abs(vmodif(3*i)-0.5).lt.1e-3) then 
+         if(abs(vmodif(3*i+1)-0.6015625).lt.1e-3) then 
+         if(abs(vmodif(3*i+2)-0.6015625).lt.1e-3) then 
+      print *, nid, 'printing', vmodif(3*i),vmodif(3*i+1),vmodif(3*i+2)
+      print *, rcodeu(i), procu(i)
+      print *, elidu(i),rstu(3*i), rstu(3*i+1), rstu(3*i+2)
+         endif 
+      endif 
+      endif 
+         enddo
    !     do i = 0, omshdi-1
    !       if(nid.eq.0) then
    !       print *,nid, vmodif(3*i),vmodif(3*i+1),vmodif(3*i+2),rcodeu(i)
@@ -499,30 +511,54 @@ c-------------------------------------------------------------------------------
          include 'SOLN'
          include 'PRECIC'
 
-      x_corner(1) = 0.6
-      x_corner(2) = 2.6
-      x_corner(3) = 2.6
-      x_corner(4) = 0.6
-      x_corner(5) = 0.6
-      x_corner(6) = 2.6
-      x_corner(7) = 2.6
-      x_corner(8) = 0.6
-      y_corner(1) = 1.
-      y_corner(2) = 1.
-      y_corner(3) = 3.
-      y_corner(4) = 3.
-      y_corner(5) = 1.
-      y_corner(6) = 1.
-      y_corner(7) = 3.
-      y_corner(8) = 3.
-      z_corner(1) = 0.625
-      z_corner(2) = 0.625
-      z_corner(3) = 0.625
-      z_corner(4) = 0.625
-      z_corner(5) = 1.375
-      z_corner(6) = 1.375
-      z_corner(7) = 1.375
-      z_corner(8) = 1.375
+      x_corner(1) = 0.245
+      x_corner(2) = 0.755
+      x_corner(3) = 0.755
+      x_corner(4) = 0.245
+      x_corner(5) = 0.245
+      x_corner(6) = 0.755
+      x_corner(7) = 0.755
+      x_corner(8) = 0.245
+      y_corner(1) = 0.245
+      y_corner(2) = 0.245
+      y_corner(3) = 0.755
+      y_corner(4) = 0.755
+      y_corner(5) = 0.245
+      y_corner(6) = 0.245
+      y_corner(7) = 0.755
+      y_corner(8) = 0.755
+      z_corner(1) = 0.245
+      z_corner(2) = 0.245
+      z_corner(3) = 0.245
+      z_corner(4) = 0.245
+      z_corner(5) = 0.755
+      z_corner(6) = 0.755
+      z_corner(7) = 0.755
+      z_corner(8) = 0.755  
+      ! x_corner(1) = 0.6
+      ! x_corner(2) = 2.6
+      ! x_corner(3) = 2.6
+      ! x_corner(4) = 0.6
+      ! x_corner(5) = 0.6
+      ! x_corner(6) = 2.6
+      ! x_corner(7) = 2.6
+      ! x_corner(8) = 0.6
+      ! y_corner(1) = 1.
+      ! y_corner(2) = 1.
+      ! y_corner(3) = 3.
+      ! y_corner(4) = 3.
+      ! y_corner(5) = 1.
+      ! y_corner(6) = 1.
+      ! y_corner(7) = 3.
+      ! y_corner(8) = 3.
+      ! z_corner(1) = 0.625
+      ! z_corner(2) = 0.625
+      ! z_corner(3) = 0.625
+      ! z_corner(4) = 0.625
+      ! z_corner(5) = 1.375
+      ! z_corner(6) = 1.375
+      ! z_corner(7) = 1.375
+      ! z_corner(8) = 1.375
       ! x_corner(1) = 0.3
       ! x_corner(2) = 1.7
       ! x_corner(3) = 1.7
@@ -800,8 +836,8 @@ c-------------------------------------------------------------------------------
          
          !trying to have correct BC's for the limit edge between x+ and y+:y- faces
          call assign_coord(1,lx1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.6)
-         ddy = abs(y_-3.)
+         ddx = abs(x_-0.245)
+         ddy = abs(y_-0.755)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = lx1
             do k = 1, lx1 
@@ -842,8 +878,8 @@ c-------------------------------------------------------------------------------
 
 
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.6)
-         ddy = abs(y_-1.)
+         ddx = abs(x_-0.245)
+         ddy = abs(y_-0.245)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = 1
             do k = 1, lx1 
@@ -862,8 +898,8 @@ c-------------------------------------------------------------------------------
 
          !doing it also for the 2 lateral edges...
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.6)
-         ddz = abs(z_-0.625)
+         ddx = abs(x_-0.245)
+         ddz = abs(z_-0.245)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = 1
             do i = 1, lx1 
@@ -880,8 +916,8 @@ c-------------------------------------------------------------------------------
             enddo
          endif
          call assign_coord(1,1,lx1,e,x_,y_,z_)
-         ddx = abs(x_-0.6)
-         ddz = abs(z_-1.375)
+         ddx = abs(x_-0.245)
+         ddz = abs(z_-0.755)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = lx1
             do i = 1, lx1 
@@ -900,8 +936,8 @@ c-------------------------------------------------------------------------------
 
          ! and doing it also on the other side of the cube
          call assign_coord(lx1,lx1,1,e,x_,y_,z_)
-         ddx = abs(x_-2.6)
-         ddy = abs(y_-3.)
+         ddx = abs(x_-0.755)
+         ddy = abs(y_-0.755)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = lx1
             do k = 1, lx1 
@@ -921,8 +957,8 @@ c-------------------------------------------------------------------------------
 
 
          call assign_coord(lx1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-2.6)
-         ddy = abs(y_-1.)
+         ddx = abs(x_-0.755)
+         ddy = abs(y_-0.245)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = 1
             do k = 1, lx1 
@@ -941,8 +977,8 @@ c-------------------------------------------------------------------------------
 
          !doing it also for the 2 lateral edges...
          call assign_coord(lx1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-2.6)
-         ddz = abs(z_-0.625)
+         ddx = abs(x_-0.755)
+         ddz = abs(z_-0.245)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = 1
             do i = 1, lx1 
@@ -959,8 +995,8 @@ c-------------------------------------------------------------------------------
             enddo
          endif
          call assign_coord(lx1,1,lx1,e,x_,y_,z_)
-         ddx = abs(x_-2.6)
-         ddz = abs(z_-1.375)
+         ddx = abs(x_-0.755)
+         ddz = abs(z_-0.755)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = lx1
             do i = 1, lx1 
@@ -979,8 +1015,8 @@ c-------------------------------------------------------------------------------
          
 
          call assign_coord(1,lx1,lx1,e,x_,y_,z_)
-         ddy = abs(y_-3.)
-         ddz = abs(z_-0.625)
+         ddy = abs(y_-0.755)
+         ddz = abs(z_-0.245)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = lx1
             do i = 1, lx1 
@@ -998,8 +1034,8 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,1,lx1,e,x_,y_,z_)
-         ddy = abs(y_-1.)
-         ddz = abs(z_-1.375)
+         ddy = abs(y_-0.245)
+         ddz = abs(z_-0.755)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = 1
             do i = 1, lx1 
@@ -1017,8 +1053,8 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,lx1,1,e,x_,y_,z_)
-         ddy = abs(y_-3.)
-         ddz = abs(z_-0.625)
+         ddy = abs(y_-0.755)
+         ddz = abs(z_-0.245)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = lx1
             do i = 1, lx1 
@@ -1036,8 +1072,8 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddy = abs(y_-1.)
-         ddz = abs(z_-0.625)
+         ddy = abs(y_-0.245)
+         ddz = abs(z_-0.245)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = 1
             do i = 1, lx1 

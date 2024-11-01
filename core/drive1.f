@@ -187,7 +187,7 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       bbby2 = -1.e30
       bbbz1 = 1.e30
       bbbz2 = -1.e30
-      bbbox_tol = 0.05
+      bbbox_tol = 0.1*4
       nel = nelfld(1)
       do ie = 1,nel 
          do k = 1, lx1 
@@ -266,6 +266,9 @@ c-----------------------------------------------------------------------
       INCLUDE 'PRECIC'
       INCLUDE 'PARALLEL'
       integer i,j
+      real*8 min_dt
+      real*8 precice_dt
+      real*8 solver_dt
 
       call nekgsync()
 
@@ -293,7 +296,18 @@ c-----------------------------------------------------------------------
       irstat = int(param(120))
 
       do kstep=1,nsteps,msteps
-         prcdt = 0.05
+         solver_dt = 0.0002
+         min_dt = 1e-10
+         call precicef_get_max_time_step_size(precice_dt)
+         if((precice_dt-solver_dt).lt.min_dt) then
+            prcdt = precice_dt
+         else 
+            prcdt = solver_dt
+         ENDIF 
+         print *, 'solver dt ', solver_dt
+
+
+
          rdDtNm = 'Murphy_u'
          rdDtNa = 'Murphy_w'
          ! rdDtNb = 'Data1_gy'

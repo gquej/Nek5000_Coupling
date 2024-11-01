@@ -19,7 +19,7 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
       character omeshn*11
       integer omshdi 
       real prcbox (0:5)
-      real prcdt
+      real*8 prcdt
       integer prcdim
       integer prcnve
       integer mpgprc (lx1,ly1,lz1,lelv)
