@@ -66,6 +66,7 @@ c-------------------------------------------------------------------------------
          include 'size'
          include 'total'
          include 'precic'
+         include 'mpif.h'
         integer nekcom
         integer nxf, nyf, nzf
         real bb_t
@@ -73,7 +74,13 @@ c-------------------------------------------------------------------------------
         real tol
         real vmodif(0:omshdi*3-1)
         real hvpm
-        integer i
+        integer i,j,nother
+        integer ierror
+        integer mapping(0:omshdi)
+        integer count_mapping
+        real x_,y_,z_
+        real ox_,oy_,oz_
+        real dist, toll, tolltoll
 
         nxf = 2 * lx1
         nyf = 2 * ly1
@@ -110,17 +117,62 @@ c-------------------------------------------------------------------------------
      &                    vmodif(1), 3,
      &                    vmodif(2), 3, omshdi)
 
-        do i = 0, omshdi -1
-         if(abs(vmodif(3*i)-0.5).lt.1e-3) then 
-         if(abs(vmodif(3*i+1)-0.6015625).lt.1e-3) then 
-         if(abs(vmodif(3*i+2)-0.6015625).lt.1e-3) then 
-      print *, nid, 'printing', vmodif(3*i),vmodif(3*i+1),vmodif(3*i+2)
-      print *, rcodeu(i), procu(i)
-      print *, elidu(i),rstu(3*i), rstu(3*i+1), rstu(3*i+2)
+       count_mapping = 0
+       do i = 0, omshdi -1
+         keep_u(i) = 0
+       enddo
+       do i = 0, omshdi -1
+         if(rcodeu(i).lt.2.and.nid.eq.procu(i)) then
+            keep_u(i) = 1
+            buf_loc(3*count_mapping) = vmodif(3*i)
+            buf_loc(3*count_mapping+1) = vmodif(3*i+1)
+            buf_loc(3*count_mapping+2) = vmodif(3*i+2)
+            mapping(i) = count_mapping
+            count_mapping = count_mapping+1
          endif 
-      endif 
-      endif 
-         enddo
+      enddo
+      buf_count(0) = count_mapping +1
+      call mpi_allgather(buf_loc,40000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 40000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_count,1,MPI_INTEGER,
+     & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
+      print *, buf_count_glob
+
+      toll = 1.e-5
+      tolltoll = toll*toll
+      print *, omshdi, 'omshdi'
+      do i = 0, omshdi -1
+         if(rcodeu(i).lt.2.and.nid.eq.procu(i)) then
+            x_ = vmodif(3*i)
+            y_ = vmodif(3*i+1)
+            z_ = vmodif(3*i+2)
+            do nother = 0, nid -1
+
+               do j = 0, buf_count_glob(nother)-1
+                  ox_ = buf_glob(40000*nother+3*j)
+                  oy_ = buf_glob(40000*nother+3*j+1)
+                  oz_ = buf_glob(40000*nother+3*j+2)
+                  dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
+     &             (y_-oy_)+(z_-oz_)*(z_-oz_)
+                  if(dist.lt.tolltoll) then 
+                  keep_u(i) = 0
+                  endif
+               enddo 
+            enddo
+         endif 
+      enddo
+
+      !   do i = 0, omshdi -1
+      !    if(abs(vmodif(3*i)-0.5).lt.1e-3) then 
+      !    if(abs(vmodif(3*i+1)-0.6015625).lt.1e-3) then 
+      !    if(abs(vmodif(3*i+2)-0.6015625).lt.1e-3) then 
+      ! print *, nid, 'printing', vmodif(3*i),vmodif(3*i+1),vmodif(3*i+2)
+      ! print *, rcodeu(i), procu(i)
+      ! print *, elidu(i),rstu(3*i), rstu(3*i+1), rstu(3*i+2)
+      !    endif 
+      ! endif 
+      ! endif 
+      !    enddo
    !     do i = 0, omshdi-1
    !       if(nid.eq.0) then
    !       print *,nid, vmodif(3*i),vmodif(3*i+1),vmodif(3*i+2),rcodeu(i)
@@ -153,6 +205,50 @@ c-------------------------------------------------------------------------------
      &                    vmodif(0), 3,
      &                    vmodif(1), 3,
      &                    vmodif(2), 3, omshdi)
+       count_mapping = 0
+       do i = 0, omshdi -1
+         keep_v(i) = 0
+       enddo
+       do i = 0, omshdi -1
+         if(rcodeu(i).lt.2.and.nid.eq.procu(i)) then
+            keep_v(i) = 1
+            buf_loc(3*count_mapping) = vmodif(3*i)
+            buf_loc(3*count_mapping+1) = vmodif(3*i+1)
+            buf_loc(3*count_mapping+2) = vmodif(3*i+2)
+            mapping(i) = count_mapping
+            count_mapping = count_mapping+1
+         endif 
+      enddo
+      buf_count(0) = count_mapping +1
+      call mpi_allgather(buf_loc,40000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 40000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_count,1,MPI_INTEGER,
+     & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
+      print *, buf_count_glob
+
+      toll = 1.e-5
+      tolltoll = toll*toll
+      print *, omshdi, 'omshdi'
+      do i = 0, omshdi -1
+         if(rcodeu(i).lt.2.and.nid.eq.procu(i)) then
+            x_ = vmodif(3*i)
+            y_ = vmodif(3*i+1)
+            z_ = vmodif(3*i+2)
+            do nother = 0, nid -1
+
+               do j = 0, buf_count_glob(nother)-1
+                  ox_ = buf_glob(40000*nother+3*j)
+                  oy_ = buf_glob(40000*nother+3*j+1)
+                  oz_ = buf_glob(40000*nother+3*j+2)
+                  dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
+     &             (y_-oy_)+(z_-oz_)*(z_-oz_)
+                  if(dist.lt.tolltoll) then 
+                  keep_v(i) = 0
+                  endif
+               enddo 
+            enddo
+         endif 
+      enddo
 
       
       call fgslib_findpts_setup(handle_w, nekcom, np_global, 3,
@@ -172,6 +268,50 @@ c-------------------------------------------------------------------------------
      &                    vmodif(0), 3,
      &                    vmodif(1), 3,
      &                    vmodif(2), 3, omshdi)
+       count_mapping = 0
+       do i = 0, omshdi -1
+         keep_w(i) = 0
+       enddo
+       do i = 0, omshdi -1
+         if(rcodeu(i).lt.2.and.nid.eq.procu(i)) then
+            keep_w(i) = 1
+            buf_loc(3*count_mapping) = vmodif(3*i)
+            buf_loc(3*count_mapping+1) = vmodif(3*i+1)
+            buf_loc(3*count_mapping+2) = vmodif(3*i+2)
+            mapping(i) = count_mapping
+            count_mapping = count_mapping+1
+         endif 
+      enddo
+      buf_count(0) = count_mapping +1
+      call mpi_allgather(buf_loc,40000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 40000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_count,1,MPI_INTEGER,
+     & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
+      print *, buf_count_glob
+
+      toll = 1.e-5
+      tolltoll = toll*toll
+      print *, omshdi, 'omshdi'
+      do i = 0, omshdi -1
+         if(rcodeu(i).lt.2.and.nid.eq.procu(i)) then
+            x_ = vmodif(3*i)
+            y_ = vmodif(3*i+1)
+            z_ = vmodif(3*i+2)
+            do nother = 0, nid -1
+
+               do j = 0, buf_count_glob(nother)-1
+                  ox_ = buf_glob(40000*nother+3*j)
+                  oy_ = buf_glob(40000*nother+3*j+1)
+                  oz_ = buf_glob(40000*nother+3*j+2)
+                  dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
+     &             (y_-oy_)+(z_-oz_)*(z_-oz_)
+                  if(dist.lt.tolltoll) then 
+                  keep_w(i) = 0
+                  endif
+               enddo 
+            enddo
+         endif 
+      enddo
       return 
       end
 
@@ -215,15 +355,15 @@ c-----------------------------------------------------------------------------
    !    endif
          do i = 0, omshdi-1 
             
-            if(procu(i).ne.nid) then 
+            if(keep_u(i).ne.1) then 
                prcwdt(3*i) = 0.
 
                endif
 
-            if(procv(i).ne.nid) then 
+            if(keep_v(i).ne.1) then 
             prcwdt(3*i+1) = 0.
             endif 
-            if(procw(i).ne.nid) then 
+            if(keep_w(i).ne.1) then 
             prcwdt(3*i+2) = 0.
             endif
          enddo 
@@ -510,31 +650,31 @@ c-------------------------------------------------------------------------------
          include 'DXYZ'
          include 'SOLN'
          include 'PRECIC'
-
-      x_corner(1) = 0.245
-      x_corner(2) = 0.755
-      x_corner(3) = 0.755
-      x_corner(4) = 0.245
-      x_corner(5) = 0.245
-      x_corner(6) = 0.755
-      x_corner(7) = 0.755
-      x_corner(8) = 0.245
-      y_corner(1) = 0.245
-      y_corner(2) = 0.245
-      y_corner(3) = 0.755
-      y_corner(4) = 0.755
-      y_corner(5) = 0.245
-      y_corner(6) = 0.245
-      y_corner(7) = 0.755
-      y_corner(8) = 0.755
-      z_corner(1) = 0.245
-      z_corner(2) = 0.245
-      z_corner(3) = 0.245
-      z_corner(4) = 0.245
-      z_corner(5) = 0.755
-      z_corner(6) = 0.755
-      z_corner(7) = 0.755
-      z_corner(8) = 0.755  
+        
+      x_corner(1) = 0.2875
+      x_corner(2) = 0.7125
+      x_corner(3) = 0.7125
+      x_corner(4) = 0.2875
+      x_corner(5) = 0.2875
+      x_corner(6) = 0.7125
+      x_corner(7) = 0.7125
+      x_corner(8) = 0.2875
+      y_corner(1) = 0.2875
+      y_corner(2) = 0.2875
+      y_corner(3) = 0.7125
+      y_corner(4) = 0.7125
+      y_corner(5) = 0.2875
+      y_corner(6) = 0.2875
+      y_corner(7) = 0.7125
+      y_corner(8) = 0.7125
+      z_corner(1) = 0.2875
+      z_corner(2) = 0.2875
+      z_corner(3) = 0.2875
+      z_corner(4) = 0.2875
+      z_corner(5) = 0.7125
+      z_corner(6) = 0.7125
+      z_corner(7) = 0.7125
+      z_corner(8) = 0.7125  
       ! x_corner(1) = 0.6
       ! x_corner(2) = 2.6
       ! x_corner(3) = 2.6
@@ -836,8 +976,8 @@ c-------------------------------------------------------------------------------
          
          !trying to have correct BC's for the limit edge between x+ and y+:y- faces
          call assign_coord(1,lx1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.245)
-         ddy = abs(y_-0.755)
+         ddx = abs(x_-0.2875)
+         ddy = abs(y_-0.7125)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = lx1
             do k = 1, lx1 
@@ -878,8 +1018,8 @@ c-------------------------------------------------------------------------------
 
 
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.245)
-         ddy = abs(y_-0.245)
+         ddx = abs(x_-0.2875)
+         ddy = abs(y_-0.2875)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = 1
             do k = 1, lx1 
@@ -898,8 +1038,8 @@ c-------------------------------------------------------------------------------
 
          !doing it also for the 2 lateral edges...
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.245)
-         ddz = abs(z_-0.245)
+         ddx = abs(x_-0.2875)
+         ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = 1
             do i = 1, lx1 
@@ -916,8 +1056,8 @@ c-------------------------------------------------------------------------------
             enddo
          endif
          call assign_coord(1,1,lx1,e,x_,y_,z_)
-         ddx = abs(x_-0.245)
-         ddz = abs(z_-0.755)
+         ddx = abs(x_-0.2875)
+         ddz = abs(z_-0.7125)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = lx1
             do i = 1, lx1 
@@ -936,8 +1076,8 @@ c-------------------------------------------------------------------------------
 
          ! and doing it also on the other side of the cube
          call assign_coord(lx1,lx1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.755)
-         ddy = abs(y_-0.755)
+         ddx = abs(x_-0.7125)
+         ddy = abs(y_-0.7125)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = lx1
             do k = 1, lx1 
@@ -957,8 +1097,8 @@ c-------------------------------------------------------------------------------
 
 
          call assign_coord(lx1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.755)
-         ddy = abs(y_-0.245)
+         ddx = abs(x_-0.7125)
+         ddy = abs(y_-0.2875)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = 1
             do k = 1, lx1 
@@ -977,8 +1117,8 @@ c-------------------------------------------------------------------------------
 
          !doing it also for the 2 lateral edges...
          call assign_coord(lx1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.755)
-         ddz = abs(z_-0.245)
+         ddx = abs(x_-0.7125)
+         ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = 1
             do i = 1, lx1 
@@ -995,8 +1135,8 @@ c-------------------------------------------------------------------------------
             enddo
          endif
          call assign_coord(lx1,1,lx1,e,x_,y_,z_)
-         ddx = abs(x_-0.755)
-         ddz = abs(z_-0.755)
+         ddx = abs(x_-0.7125)
+         ddz = abs(z_-0.7125)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = lx1
             do i = 1, lx1 
@@ -1015,8 +1155,8 @@ c-------------------------------------------------------------------------------
          
 
          call assign_coord(1,lx1,lx1,e,x_,y_,z_)
-         ddy = abs(y_-0.755)
-         ddz = abs(z_-0.245)
+         ddy = abs(y_-0.7125)
+         ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = lx1
             do i = 1, lx1 
@@ -1034,8 +1174,8 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,1,lx1,e,x_,y_,z_)
-         ddy = abs(y_-0.245)
-         ddz = abs(z_-0.755)
+         ddy = abs(y_-0.2875)
+         ddz = abs(z_-0.7125)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = 1
             do i = 1, lx1 
@@ -1053,8 +1193,8 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,lx1,1,e,x_,y_,z_)
-         ddy = abs(y_-0.755)
-         ddz = abs(z_-0.245)
+         ddy = abs(y_-0.7125)
+         ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = lx1
             do i = 1, lx1 
@@ -1072,8 +1212,8 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddy = abs(y_-0.245)
-         ddz = abs(z_-0.245)
+         ddy = abs(y_-0.2875)
+         ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = 1
             do i = 1, lx1 

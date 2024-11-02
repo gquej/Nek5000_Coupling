@@ -32,6 +32,15 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
       character rdDtNc*100
       character wrDtNm*100
 
+      ! trying to fix the problem of duplicate murphy vertices across ranks
+      real buf_loc(0:40000)
+      real buf_glob(0:480000)
+      integer buf_count(0:0)
+      integer buf_count_glob(0:12)
+      integer keep_u(0:40000),keep_v(0:40000),keep_w(0:40000)
+      common /precic/ buf_loc, buf_glob,buf_count,buf_count_glob
+      common /precic/ keep_u,keep_v,keep_w
+
       real usol(lx1,lx1,6,lelt) ! u field on the boundary nodes of each element
       !stored face by face with the numbering 4,2,1,3,5,6 for x-,x+,y-,y+,z-,z+
       real vsol(lx1,lx1,6,lelt) ! v field on the boundary nodes of each element
