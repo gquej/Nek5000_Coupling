@@ -132,8 +132,8 @@ c-------------------------------------------------------------------------------
          endif 
       enddo
       buf_count(0) = count_mapping +1
-      call mpi_allgather(buf_loc,40000,MPI_DOUBLE_PRECISION,buf_glob,
-     & 40000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_loc,80000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 80000,MPI_DOUBLE_PRECISION,nekcom,ierror)
       call mpi_allgather(buf_count,1,MPI_INTEGER,
      & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
       print *, buf_count_glob
@@ -149,9 +149,9 @@ c-------------------------------------------------------------------------------
             do nother = 0, nid -1
 
                do j = 0, buf_count_glob(nother)-1
-                  ox_ = buf_glob(40000*nother+3*j)
-                  oy_ = buf_glob(40000*nother+3*j+1)
-                  oz_ = buf_glob(40000*nother+3*j+2)
+                  ox_ = buf_glob(80000*nother+3*j)
+                  oy_ = buf_glob(80000*nother+3*j+1)
+                  oz_ = buf_glob(80000*nother+3*j+2)
                   dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
      &             (y_-oy_)+(z_-oz_)*(z_-oz_)
                   if(dist.lt.tolltoll) then 
@@ -220,8 +220,8 @@ c-------------------------------------------------------------------------------
          endif 
       enddo
       buf_count(0) = count_mapping +1
-      call mpi_allgather(buf_loc,40000,MPI_DOUBLE_PRECISION,buf_glob,
-     & 40000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_loc,80000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 80000,MPI_DOUBLE_PRECISION,nekcom,ierror)
       call mpi_allgather(buf_count,1,MPI_INTEGER,
      & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
       print *, buf_count_glob
@@ -237,9 +237,9 @@ c-------------------------------------------------------------------------------
             do nother = 0, nid -1
 
                do j = 0, buf_count_glob(nother)-1
-                  ox_ = buf_glob(40000*nother+3*j)
-                  oy_ = buf_glob(40000*nother+3*j+1)
-                  oz_ = buf_glob(40000*nother+3*j+2)
+                  ox_ = buf_glob(80000*nother+3*j)
+                  oy_ = buf_glob(80000*nother+3*j+1)
+                  oz_ = buf_glob(80000*nother+3*j+2)
                   dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
      &             (y_-oy_)+(z_-oz_)*(z_-oz_)
                   if(dist.lt.tolltoll) then 
@@ -283,8 +283,8 @@ c-------------------------------------------------------------------------------
          endif 
       enddo
       buf_count(0) = count_mapping +1
-      call mpi_allgather(buf_loc,40000,MPI_DOUBLE_PRECISION,buf_glob,
-     & 40000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_loc,80000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 80000,MPI_DOUBLE_PRECISION,nekcom,ierror)
       call mpi_allgather(buf_count,1,MPI_INTEGER,
      & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
       print *, buf_count_glob
@@ -300,9 +300,9 @@ c-------------------------------------------------------------------------------
             do nother = 0, nid -1
 
                do j = 0, buf_count_glob(nother)-1
-                  ox_ = buf_glob(40000*nother+3*j)
-                  oy_ = buf_glob(40000*nother+3*j+1)
-                  oz_ = buf_glob(40000*nother+3*j+2)
+                  ox_ = buf_glob(80000*nother+3*j)
+                  oy_ = buf_glob(80000*nother+3*j+1)
+                  oz_ = buf_glob(80000*nother+3*j+2)
                   dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
      &             (y_-oy_)+(z_-oz_)*(z_-oz_)
                   if(dist.lt.tolltoll) then 

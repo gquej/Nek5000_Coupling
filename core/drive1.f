@@ -187,7 +187,7 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       bbby2 = -1.e30
       bbbz1 = 1.e30
       bbbz2 = -1.e30
-      bbbox_tol = 0.1*4
+      bbbox_tol = 0.01
       nel = nelfld(1)
       do ie = 1,nel 
          do k = 1, lx1 
@@ -246,6 +246,7 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       call precicef_get_mesh_vertex_size(omeshn, omshdi)
       call precicef_get_mesh_vertex_ids_and_coordinates(omeshn,
      & omshdi,prcvi2, prcvr2)
+      print *, nid,'other mesh dim', omshdi
       
 
       call assign_corner
@@ -296,15 +297,16 @@ c-----------------------------------------------------------------------
       irstat = int(param(120))
 
       do kstep=1,nsteps,msteps
-         solver_dt = 0.0002
+         solver_dt = 0.0001
          min_dt = 1e-10
-         call precicef_get_max_time_step_size(precice_dt)
-         if((precice_dt-solver_dt).lt.min_dt) then
-            prcdt = precice_dt
-         else 
-            prcdt = solver_dt
-         ENDIF 
-         print *, 'solver dt ', solver_dt
+         ! call precicef_get_max_time_step_size(precice_dt)
+         ! if((precice_dt-solver_dt).lt.min_dt) then
+         !    prcdt = precice_dt
+         ! else 
+         !    prcdt = solver_dt
+         ! ENDIF 
+         ! print *, 'solver dt ', solver_dt
+         prcdt = solver_dt
 
 
 

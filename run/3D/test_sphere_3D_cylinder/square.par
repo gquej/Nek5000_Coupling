@@ -2,9 +2,9 @@
 # nek parameter file
 #
 [GENERAL]
-dt = 0.0002
+dt = 0.0001
 numsteps = 10000000
-	writeInterval = 25
+	writeInterval = 40
 userParam01 = 1.0   #vortex circulation [m^2/s] or TGV characteristic velocity (m/s)
 userParam02 = 0.8    #vortex radius [m] or TGV period (m)
 userParam03 = -1.0#-0.475  #vortex initial x position [m]
@@ -21,7 +21,7 @@ userParam08 = 0  #0 fo Gaussian vortex, 1 for Taylor-Green vortex
 userParam09 = 0  #0 for dirichlet global, 1 for dir local, 2 for shl
 [VELOCITY]
 density = 1.0        #kg/m^3
-viscosity = 0.0033333  #kg/m-s
+viscosity = 0.00333333  #kg/m-s
 
 #[TEMPERATURE]
 #rhoCp = 1200.0       #J/m3-K
