@@ -63,9 +63,9 @@
 
 c---------------------------------------------------------------------------------------------      
       subroutine setup_interp(nekcom)
-         include 'size'
-         include 'total'
-         include 'precic'
+         include 'SIZE'
+         include 'TOTAL'
+         include 'PRECIV'
          include 'mpif.h'
         integer nekcom
         integer nxf, nyf, nzf
@@ -320,7 +320,7 @@ c-----------------------------------------------------------------------------
 
          INCLUDE 'SIZE'
          INCLUDE 'TOTAL'
-         include 'precic'
+         include 'PRECIC'
  
          
          call fgslib_findpts_eval(handle_u,prcwdt(0), 3,
