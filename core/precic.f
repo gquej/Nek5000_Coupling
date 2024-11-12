@@ -65,7 +65,7 @@ c-------------------------------------------------------------------------------
       subroutine setup_interp(nekcom)
          include 'SIZE'
          include 'TOTAL'
-         include 'PRECIV'
+         include 'PRECIC'
          include 'mpif.h'
         integer nekcom
         integer nxf, nyf, nzf
