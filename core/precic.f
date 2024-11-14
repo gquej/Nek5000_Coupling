@@ -132,8 +132,8 @@ c-------------------------------------------------------------------------------
          endif 
       enddo
       buf_count(0) = count_mapping +1
-      call mpi_allgather(buf_loc,80000,MPI_DOUBLE_PRECISION,buf_glob,
-     & 80000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_loc,150000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 150000,MPI_DOUBLE_PRECISION,nekcom,ierror)
       call mpi_allgather(buf_count,1,MPI_INTEGER,
      & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
       print *, buf_count_glob
@@ -149,9 +149,9 @@ c-------------------------------------------------------------------------------
             do nother = 0, nid -1
 
                do j = 0, buf_count_glob(nother)-1
-                  ox_ = buf_glob(80000*nother+3*j)
-                  oy_ = buf_glob(80000*nother+3*j+1)
-                  oz_ = buf_glob(80000*nother+3*j+2)
+                  ox_ = buf_glob(150000*nother+3*j)
+                  oy_ = buf_glob(150000*nother+3*j+1)
+                  oz_ = buf_glob(150000*nother+3*j+2)
                   dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
      &             (y_-oy_)+(z_-oz_)*(z_-oz_)
                   if(dist.lt.tolltoll) then 
@@ -220,8 +220,8 @@ c-------------------------------------------------------------------------------
          endif 
       enddo
       buf_count(0) = count_mapping +1
-      call mpi_allgather(buf_loc,80000,MPI_DOUBLE_PRECISION,buf_glob,
-     & 80000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_loc,150000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 150000,MPI_DOUBLE_PRECISION,nekcom,ierror)
       call mpi_allgather(buf_count,1,MPI_INTEGER,
      & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
       print *, buf_count_glob
@@ -237,9 +237,9 @@ c-------------------------------------------------------------------------------
             do nother = 0, nid -1
 
                do j = 0, buf_count_glob(nother)-1
-                  ox_ = buf_glob(80000*nother+3*j)
-                  oy_ = buf_glob(80000*nother+3*j+1)
-                  oz_ = buf_glob(80000*nother+3*j+2)
+                  ox_ = buf_glob(150000*nother+3*j)
+                  oy_ = buf_glob(150000*nother+3*j+1)
+                  oz_ = buf_glob(150000*nother+3*j+2)
                   dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
      &             (y_-oy_)+(z_-oz_)*(z_-oz_)
                   if(dist.lt.tolltoll) then 
@@ -283,8 +283,8 @@ c-------------------------------------------------------------------------------
          endif 
       enddo
       buf_count(0) = count_mapping +1
-      call mpi_allgather(buf_loc,80000,MPI_DOUBLE_PRECISION,buf_glob,
-     & 80000,MPI_DOUBLE_PRECISION,nekcom,ierror)
+      call mpi_allgather(buf_loc,150000,MPI_DOUBLE_PRECISION,buf_glob,
+     & 150000,MPI_DOUBLE_PRECISION,nekcom,ierror)
       call mpi_allgather(buf_count,1,MPI_INTEGER,
      & buf_count_glob,1,MPI_INTEGER,nekcom,ierror)
       print *, buf_count_glob
@@ -300,9 +300,9 @@ c-------------------------------------------------------------------------------
             do nother = 0, nid -1
 
                do j = 0, buf_count_glob(nother)-1
-                  ox_ = buf_glob(80000*nother+3*j)
-                  oy_ = buf_glob(80000*nother+3*j+1)
-                  oz_ = buf_glob(80000*nother+3*j+2)
+                  ox_ = buf_glob(150000*nother+3*j)
+                  oy_ = buf_glob(150000*nother+3*j+1)
+                  oz_ = buf_glob(150000*nother+3*j+2)
                   dist = (x_-ox_)*(x_-ox_) +(y_-oy_)*
      &             (y_-oy_)+(z_-oz_)*(z_-oz_)
                   if(dist.lt.tolltoll) then 
@@ -651,22 +651,22 @@ c-------------------------------------------------------------------------------
          include 'SOLN'
          include 'PRECIC'
         
-      x_corner(1) = 0.2875
-      x_corner(2) = 0.7125
-      x_corner(3) = 0.7125
-      x_corner(4) = 0.2875
-      x_corner(5) = 0.2875
-      x_corner(6) = 0.7125
-      x_corner(7) = 0.7125
-      x_corner(8) = 0.2875
-      y_corner(1) = 0.2875
-      y_corner(2) = 0.2875
-      y_corner(3) = 0.7125
-      y_corner(4) = 0.7125
-      y_corner(5) = 0.2875
-      y_corner(6) = 0.2875
-      y_corner(7) = 0.7125
-      y_corner(8) = 0.7125
+      x_corner(1) = 0.1375
+      x_corner(2) = 0.5625
+      x_corner(3) = 0.5625
+      x_corner(4) = 0.1375
+      x_corner(5) = 0.1375
+      x_corner(6) = 0.5625
+      x_corner(7) = 0.5625
+      x_corner(8) = 0.1375
+      y_corner(1) = 0.1375
+      y_corner(2) = 0.1375
+      y_corner(3) = 0.5625
+      y_corner(4) = 0.5625
+      y_corner(5) = 0.1375
+      y_corner(6) = 0.1375
+      y_corner(7) = 0.5625
+      y_corner(8) = 0.5625
       z_corner(1) = 0.2875
       z_corner(2) = 0.2875
       z_corner(3) = 0.2875
@@ -976,8 +976,8 @@ c-------------------------------------------------------------------------------
          
          !trying to have correct BC's for the limit edge between x+ and y+:y- faces
          call assign_coord(1,lx1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.2875)
-         ddy = abs(y_-0.7125)
+         ddx = abs(x_-0.1375)
+         ddy = abs(y_-0.5625)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = lx1
             do k = 1, lx1 
@@ -1018,8 +1018,8 @@ c-------------------------------------------------------------------------------
 
 
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.2875)
-         ddy = abs(y_-0.2875)
+         ddx = abs(x_-0.1375)
+         ddy = abs(y_-0.1375)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = 1
             do k = 1, lx1 
@@ -1038,7 +1038,7 @@ c-------------------------------------------------------------------------------
 
          !doing it also for the 2 lateral edges...
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.2875)
+         ddx = abs(x_-0.1375)
          ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = 1
@@ -1056,7 +1056,7 @@ c-------------------------------------------------------------------------------
             enddo
          endif
          call assign_coord(1,1,lx1,e,x_,y_,z_)
-         ddx = abs(x_-0.2875)
+         ddx = abs(x_-0.1375)
          ddz = abs(z_-0.7125)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = lx1
@@ -1076,8 +1076,8 @@ c-------------------------------------------------------------------------------
 
          ! and doing it also on the other side of the cube
          call assign_coord(lx1,lx1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.7125)
-         ddy = abs(y_-0.7125)
+         ddx = abs(x_-0.5625)
+         ddy = abs(y_-0.5625)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = lx1
             do k = 1, lx1 
@@ -1097,8 +1097,8 @@ c-------------------------------------------------------------------------------
 
 
          call assign_coord(lx1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.7125)
-         ddy = abs(y_-0.2875)
+         ddx = abs(x_-0.5625)
+         ddy = abs(y_-0.1375)
          if (ddy.lt.dtol.and.ddx.lt.dtol) then 
             i = 1
             do k = 1, lx1 
@@ -1117,7 +1117,7 @@ c-------------------------------------------------------------------------------
 
          !doing it also for the 2 lateral edges...
          call assign_coord(lx1,1,1,e,x_,y_,z_)
-         ddx = abs(x_-0.7125)
+         ddx = abs(x_-0.5625)
          ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = 1
@@ -1135,7 +1135,7 @@ c-------------------------------------------------------------------------------
             enddo
          endif
          call assign_coord(lx1,1,lx1,e,x_,y_,z_)
-         ddx = abs(x_-0.7125)
+         ddx = abs(x_-0.5625)
          ddz = abs(z_-0.7125)
          if (ddz.lt.dtol.and.ddx.lt.dtol) then 
             k = lx1
@@ -1155,7 +1155,7 @@ c-------------------------------------------------------------------------------
          
 
          call assign_coord(1,lx1,lx1,e,x_,y_,z_)
-         ddy = abs(y_-0.7125)
+         ddy = abs(y_-0.5625)
          ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = lx1
@@ -1174,7 +1174,7 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,1,lx1,e,x_,y_,z_)
-         ddy = abs(y_-0.2875)
+         ddy = abs(y_-0.1375)
          ddz = abs(z_-0.7125)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = 1
@@ -1193,7 +1193,7 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,lx1,1,e,x_,y_,z_)
-         ddy = abs(y_-0.7125)
+         ddy = abs(y_-0.5625)
          ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = lx1
@@ -1212,7 +1212,7 @@ c-------------------------------------------------------------------------------
          endif
 
          call assign_coord(1,1,1,e,x_,y_,z_)
-         ddy = abs(y_-0.2875)
+         ddy = abs(y_-0.1375)
          ddz = abs(z_-0.2875)
          if (ddz.lt.dtol.and.ddy.lt.dtol) then 
             k = 1

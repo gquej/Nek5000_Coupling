@@ -187,7 +187,7 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       bbby2 = -1.e30
       bbbz1 = 1.e30
       bbbz2 = -1.e30
-      bbbox_tol = 0.01
+      bbbox_tol = 0.02
       nel = nelfld(1)
       do ie = 1,nel 
          do k = 1, lx1 
@@ -297,7 +297,7 @@ c-----------------------------------------------------------------------
       irstat = int(param(120))
 
       do kstep=1,nsteps,msteps
-         solver_dt = 0.0001
+         solver_dt = 0.000025
          min_dt = 1e-10
          ! call precicef_get_max_time_step_size(precice_dt)
          ! if((precice_dt-solver_dt).lt.min_dt) then

@@ -1,0 +1,33 @@
+#
+# nek parameter file
+#
+[GENERAL]
+dt = 0.000025
+numsteps = 10000000
+	writeInterval = 1
+userParam01 = 1.0   #vortex circulation [m^2/s] or TGV characteristic velocity (m/s)
+userParam02 = 0.8    #vortex radius [m] or TGV period (m)
+userParam03 = -1.0#-0.475  #vortex initial x position [m]
+userParam04 = 1.0#0.475   #vortex initial y position [m]
+userParam10 = -0.2#0.325 #vortex initial z position [m]
+userParam05 =  0.175   #vortex x velocity [m/s]
+userParam06 = -0.175  #vortex y velocity [m/s]
+userParam11 = 0.175  #vortex z velocity [m/s]
+userParam12 = -1.2 #vortex tube center line director vector x component
+userParam13 = 0.8 #vortex tube center line director vector y component
+userParam14 = 1.0 #vortex tube center line director vector z component
+userParam07 = 1  #1 if mesh via genbox, 0 otherwise
+userParam08 = 0  #0 fo Gaussian vortex, 1 for Taylor-Green vortex
+userParam09 = 0  #0 for dirichlet global, 1 for dir local, 2 for shl
+[VELOCITY]
+density = 1.0        #kg/m^3
+viscosity = 0.00333333  #kg/m-s
+
+#[TEMPERATURE]
+#rhoCp = 1200.0       #J/m3-K
+#conductivity = 0.025 #W/m-K
+
+[PROBLEMTYPE]
+stressFormulation = no
+
+

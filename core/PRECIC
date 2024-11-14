@@ -6,16 +6,16 @@ c     prcdt: time step
 c     prcdim: dimension of the problem
 c     prcnve: number of vertices
 c     mpgprc: mapping between the outer boundary vertices and the unique vertices of the mesh boundary
-      real prcvrt (0:200000) !77 
-      integer prcvid (0:200000) !25
-      real prcwdt (0:400000)
-      real prcrdt (0:200000)
-      real prcrdx (0:200000)
-      real prcrdy (0:200000)
-      real prcrdz (0:200000)
+      real prcvrt (0:400000) !77 
+      integer prcvid (0:100000) !25
+      real prcwdt (0:600000)
+      real prcrdt (0:400000)
+      real prcrdx (0:400000)
+      ! real prcrdy (0:200000)
+      ! real prcrdz (0:200000)
 
-      real prcvr2 (0:400000) !77
-      integer prcvi2 (0:150000) !25
+      real prcvr2 (0:600000) !77
+      integer prcvi2 (0:200000) !25
       character omeshn*11
       integer omshdi 
       real prcbox (0:5)
@@ -33,11 +33,11 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
       character wrDtNm*100
 
       ! trying to fix the problem of duplicate murphy vertices across ranks
-      real buf_loc(0:80000)
-      real buf_glob(0:960000)
+      real buf_loc(0:150000)
+      real buf_glob(0:1800000)
       integer buf_count(0:0)
       integer buf_count_glob(0:12)
-      integer keep_u(0:80000),keep_v(0:80000),keep_w(0:80000)
+      integer keep_u(0:150000),keep_v(0:150000),keep_w(0:150000)
       common /precic/ buf_loc, buf_glob,buf_count,buf_count_glob
       common /precic/ keep_u,keep_v,keep_w
 
@@ -52,11 +52,11 @@ c     mpgprc: mapping between the outer boundary vertices and the unique vertice
 
       !arrays for interpolation of u, v, w
       integer handle_u, handle_v, handle_w
-      integer rcodeu(0:130000), rcodev(0:130000),rcodew(0:130000)
-      integer procu(0:130000), procv(0:130000),procw(0:130000)
-      integer elidu(0:130000), elidv(0:130000),elidw(0:130000)
-      real rstu(0:400000),rstvv(0:400000),rstw(0:400000)  !rstvv because rstv is already used...
-      real distu(0:400000), distv(0:400000), distw(0:400000) 
+      integer rcodeu(0:150000), rcodev(0:150000),rcodew(0:150000)
+      integer procu(0:150000), procv(0:150000),procw(0:150000)
+      integer elidu(0:150000), elidv(0:150000),elidw(0:150000)
+      real rstu(0:150000),rstvv(0:150000),rstw(0:150000)  !rstvv because rstv is already used...
+      real distu(0:150000), distv(0:150000), distw(0:150000) 
 
       !try to stabilize the coupling: store the values of interior point at previous time step
       !since we treat the thing by element, and by face, thats basically a lot of additional data...
