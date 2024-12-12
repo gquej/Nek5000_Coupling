@@ -187,7 +187,7 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       bbby2 = -1.e30
       bbbz1 = 1.e30
       bbbz2 = -1.e30
-      bbbox_tol = 0.02
+      bbbox_tol = 2.*uparam(1)
       nel = nelfld(1)
       do ie = 1,nel 
          do k = 1, lx1 
