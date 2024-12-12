@@ -185,6 +185,7 @@ c
       include 'INPUT'
       include 'TSTEP'
       include 'PARALLEL'
+      include 'PRECIC'
 
       common /scruz/ cx(lx1*ly1*lz1*lelt)
      $ ,             cy(lx1,ly1,lz1,lelt)
@@ -202,12 +203,22 @@ c
       logical iffxdt
       save    iffxdt
       data    iffxdt /.false./
+      real    precice_dt
+      real    min_dt
 C
 
       if (param(12).lt.0.or.iffxdt) then
          iffxdt    = .true.
          param(12) = abs(param(12))
          dt        = param(12)
+         min_dt    = 1.e-10
+         call precicef_get_max_time_step_size(precice_dt)
+         if((precice_dt-dt).lt.min_dt) then
+            prcdt = precice_dt
+         else 
+            prcdt = dt
+         ENDIF 
+         dt = prcdt
          dtopf     = dt
          if (ifmvbd) then
            call opsub3 (cx,cy,cz,vx,vy,vz,wx,wy,wz)

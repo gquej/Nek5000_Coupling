@@ -297,8 +297,9 @@ c-----------------------------------------------------------------------
       irstat = int(param(120))
 
       do kstep=1,nsteps,msteps
-         solver_dt = 0.000025
-         min_dt = 1e-10
+         ! solver_dt = 0.00005
+
+         ! min_dt = 1e-10
          ! call precicef_get_max_time_step_size(precice_dt)
          ! if((precice_dt-solver_dt).lt.min_dt) then
          !    prcdt = precice_dt
@@ -306,7 +307,7 @@ c-----------------------------------------------------------------------
          !    prcdt = solver_dt
          ! ENDIF 
          ! print *, 'solver dt ', solver_dt
-         prcdt = solver_dt
+         ! prcdt = solver_dt
 
 
 
@@ -314,11 +315,14 @@ c-----------------------------------------------------------------------
          rdDtNa = 'Murphy_w'
          ! rdDtNb = 'Data1_gy'
          ! rdDtNc = 'Data1_gz'
+         
+         
+         call settime  !compute dt
             
          call precicef_read_data(meshnm, rdDtNm, prcnve, 
-     &    prcvid ,prcdt, prcrdt)
+     &    prcvid ,dt, prcrdt)
          call precicef_read_data(meshnm, rdDtNa, prcnve, 
-     &    prcvid ,prcdt, prcrdx)
+     &    prcvid ,dt, prcrdx)
          call compute_bc(kstep)
          
    !       call precicef_read_data(meshnm, rdDtNb, prcnve, 
@@ -353,7 +357,7 @@ c-----------------------------------------------------------------------
          call precicef_write_data(omeshn, wrDtNm, omshdi, prcvi2 ,
      &     prcwdt)
          print *, 'ici3'
-         call precicef_advance(prcdt)
+         call precicef_advance(dt)
          print *, 'ici4'
       enddo
  1001 lastep=1
@@ -392,7 +396,7 @@ c-----------------------------------------------------------------------
 
       call setup_convect(2) ! Save conv vel
 
-      if (iftran) call settime
+      !if (iftran) call settime
       if (ifmhd ) call cfl_check
       call setsolv
       call comment
